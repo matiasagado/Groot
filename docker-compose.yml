@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  backend:
+    container_name: poc-backend
+    build: ./backend
+    ports:
+      - "9000:9000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LLAMACPP_HOST=100.64.0.14
+      - LLAMACPP_PORT=8080
+      - TABBY_API_KEY=
+      - TABBY_HOST=100.64.0.14
+      - TABBY_PORT=5000
+
+  log-client:
+    container_name: poc-log-client
+    build: ./log-client
+    volumes:
+      - ./logs/dmesg/5-line.log:/logs/log.log
+    depends_on:
+      - backend
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    command: /bin/sh -c "sleep 5 && python3 /app/mock-logger.py /logs/log.log"
+
+  redis:
+    container_name: poc-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./container-data/redis/data:/data
