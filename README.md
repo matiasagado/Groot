@@ -14,6 +14,7 @@ The current state of this is:
 
 - After much experimentation we are using [TabbyAPI](https://github.com/theroyallab/tabbyAPI) as the interface to our LLM. The engine it is using [ExLLamaV2](https://github.com/turboderp/exllamav2) to run the model.
 - The model we are using is a quantized version of Mixtral-instruct-8x7B. The model is on Huggingface as [Mixtral-8x7B-instruct-exl2](huggingface.co/turboderp/Mixtral-8x7B-instruct-exl2). It fits on the 2x RTX 3090 GPUs we have on MonsterMax.
+- A lot of the https://vector.dev configurations are not checked in here. There has been a lot of work done on those transformations.
 
 - Currently the database output needs to be built out. I'll update this when I complete that.
 
