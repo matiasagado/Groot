@@ -1,0 +1,2 @@
+redis
+pystackapi @ git+https://github.com/wchistow/pystackapi.git@0.2.0
