@@ -1,0 +1,23 @@
+[
+    {
+      "log": "[   12.203455] sd 0:0:3:0: [sdc] tag#64 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.671460] ipmi_platform: ipmi_si: SMBIOS: io 0xca8 regsize 1 spacing 4 irq 10",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.702549] cryptd: max_cpu_qlen set to 1000",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.852208] nvidia: module verification failed: signature and/or required key missing - tainting kernel",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.853878] intel_rapl_common: Found RAPL domain package",
+      "level": "INFO"
+    }
+  ]
+  
