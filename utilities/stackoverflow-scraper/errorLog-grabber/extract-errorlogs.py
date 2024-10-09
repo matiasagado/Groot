@@ -12,6 +12,7 @@ except redis.ConnectionError:
     print("Failed to connect to Redis server.")
 
 list_key = "[nginx]"  # Replace with your list key
+# Change the range here for looking at different indexes. (E.G: looking at 0 index to 5)
 list_elements = r.lrange(list_key, 0, 5)
 # Decode byte values (if they are stored as bytes)
 decoded_list_elements = [element.decode('utf-8') for element in list_elements]
