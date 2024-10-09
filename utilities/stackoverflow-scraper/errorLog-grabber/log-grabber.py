@@ -12,11 +12,25 @@ except redis.ConnectionError:
     print("Failed to connect to Redis server.")
 
 hash_key = "so_data"  # Replace with your hash key
-field = 35538757  # Replace with the specific field you're looking for
+field = 74613757  # Replace with the specific field you're looking for
 hash_value = r.hget(hash_key, field)
 
-if hash_value:
-    print(f"Value for field '{field}' in hash '{hash_key}': {hash_value}")
-else:
-    print(f"No value found for field '{field}' in hash '{hash_key}'")
+def extract_error_logs(text):
+    # Define the regex pattern for extracting Nginx error log lines
+    error_log_pattern = r'nginx:\s+[^\n]+'
+    
+    # Use the findall method to extract all matching error log lines
+    error_logs = re.findall(error_log_pattern, text)
+    
+    return error_logs
+
+decoded_value = hash_value.decode('utf-8')
+#print(decoded_value)
+extracted_logs = extract_error_logs(decoded_value)
+
+# Print the extracted error log lines
+for log in extracted_logs:
+    print(log)
+
+
 
