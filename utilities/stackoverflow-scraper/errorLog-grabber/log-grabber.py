@@ -12,7 +12,8 @@ except redis.ConnectionError:
     print("Failed to connect to Redis server.")
 
 hash_key = "so_data"  # Replace with your hash key
-field = 74613757  # Replace with the specific field you're looking for
+#field = 74613757  # Replace with the specific field you're looking for
+field = 23262663
 hash_value = r.hget(hash_key, field)
 
 def extract_error_logs(text):
@@ -25,7 +26,7 @@ def extract_error_logs(text):
     return error_logs
 
 decoded_value = hash_value.decode('utf-8')
-#print(decoded_value)
+print(decoded_value)
 extracted_logs = extract_error_logs(decoded_value)
 
 # Print the extracted error log lines
