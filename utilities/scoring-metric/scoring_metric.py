@@ -59,5 +59,8 @@ def main():
         # Step 3: Calculate metrics
         accuracy, precision, recall, f1, conf_matrix = calculate_metrics(true_labels, predicted_labels)
 
+        # Step 4: Display the metrics
+        display_metrics(accuracy, precision, recall, f1, conf_matrix)
+
 if __name__ == '__main__':
     main()
