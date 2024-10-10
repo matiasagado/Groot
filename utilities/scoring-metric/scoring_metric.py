@@ -22,7 +22,11 @@ def load_classification_data(file_path):
         return []
 
 def extract_labels(data):
-    """Extract labels from the JSON data"""
+    """
+    Load classification data from the provided JSON file.
+    Returns:
+        - data: A list of dictionaries, each containing 'classification' and 'log_line'.
+    """
     true_labels = [entry['classification'] for entry in data]
     # TODO: Replace this with actual LLM predicted labels
     predicted_labels = ['ERROR' if 'error' in entry['log_line'].lower() else 'INFO' for entry in data]
