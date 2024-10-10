@@ -28,6 +28,15 @@ def extract_labels(data):
     predicted_labels = ['ERROR' if 'error' in entry['log_line'].lower() else 'INFO' for entry in data]
     return true_labels, predicted_labels
 
+def calculate_metrics(true_labels, predicted_labels):
+    """Calculate classification performance metrics."""
+    accuracy = accuracy_score(true_labels, predicted_labels)
+    precision = precision_score(true_labels, predicted_labels, pos_label='ERROR')
+    recall = recall_score(true_labels, predicted_labels, pos_label='ERROR')
+    f1 = f1_score(true_labels, predicted_labels, pos_label='ERROR')
+    conf_matrix = confusion_matrix(true_labels, predicted_labels)
+    return accuracy, precision, recall, f1, conf_matrix
+
 def main():
 
     #Step 1: Load the classification data
