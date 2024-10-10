@@ -21,5 +21,10 @@ def load_classification_data(file_path):
         print(f"Exception")
         return []
 
+def main():
+
+    #Step 1: Load the classification data
+    data = load_classification_data(json_file_path)
+
 if __name__ == '__main__':
     main()
