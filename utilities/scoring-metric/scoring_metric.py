@@ -58,7 +58,10 @@ def calculate_metrics(true_labels, predicted_labels):
     return accuracy, precision, recall, f1, conf_matrix
 
 def display_metrics(accuracy, precision, recall, f1, conf_matrix):
-    """Display the performance metrics."""
+    """
+    Display the calculated metrics in a readable format.
+    Prints accuracy, precision, recall, F1 score, and confusion matrix.
+    """
     print(f"Accuracy: {accuracy:.2f}")
     print(f"Precision: {precision:.2f}")
     print(f"Recall: {recall:.2f}")
