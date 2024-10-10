@@ -6,7 +6,11 @@ import os
 json_file_path = os.path.join(os.getcwd(), '../../backend/src/classification_files.json')
 
 def load_classification_data(file_path):
-    """Load classification data from JSON file"""
+    """
+    Load classification data from the provided JSON file.
+    Returns:
+        - data: A list of dictionaries, each containing 'classification' and 'log_line'.
+    """
     try:
         with open(json_path, 'r') as file:
             data = json.load(file)
@@ -34,6 +38,14 @@ def extract_labels(data):
 
 def calculate_metrics(true_labels, predicted_labels):
     """Calculate classification performance metrics."""
+    """
+    Extract true labels and predicted labels from the JSON data.
+    True labels are from the 'classification' key.
+    Predicted labels are inferred based on the content of 'log_line'.
+    Returns:
+        - true_labels: List of true classifications from the data.
+        - predicted_labels: List of predicted classifications based on log content.
+    """
     accuracy = accuracy_score(true_labels, predicted_labels)
     precision = precision_score(true_labels, predicted_labels, pos_label='ERROR')
     recall = recall_score(true_labels, predicted_labels, pos_label='ERROR')
