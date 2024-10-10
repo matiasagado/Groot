@@ -33,5 +33,10 @@ def main():
     #Step 1: Load the classification data
     data = load_classification_data(json_file_path)
 
+    if data:
+
+        # Step 2: Extract labels
+        true_labels, predicted_lables = extract_labels(data)
+
 if __name__ == '__main__':
     main()
