@@ -40,7 +40,16 @@ def extract_labels(data):
     return true_labels, predicted_labels
 
 def calculate_metrics(true_labels, predicted_labels):
-    """Calculate classification performance metrics."""
+    """
+    Calculate classification performance metrics.
+    Metrics include accuracy, precision, recall, F1 score, and confusion matrix.
+    Returns:
+        - accuracy: The overall accuracy of the classification.
+        - precision: The precision for classifying 'ERROR'.
+        - recall: The recall for classifying 'ERROR'.
+        - f1: The F1 score, a balance between precision and recall.
+        - conf_matrix: A confusion matrix to summarize the classification performance.
+    """
     accuracy = accuracy_score(true_labels, predicted_labels)
     precision = precision_score(true_labels, predicted_labels, pos_label='ERROR')
     recall = recall_score(true_labels, predicted_labels, pos_label='ERROR')
