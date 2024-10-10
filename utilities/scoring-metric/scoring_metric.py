@@ -37,6 +37,15 @@ def calculate_metrics(true_labels, predicted_labels):
     conf_matrix = confusion_matrix(true_labels, predicted_labels)
     return accuracy, precision, recall, f1, conf_matrix
 
+def display_metrics(accuracy, precision, recall, f1, conf_matrix):
+    """Display the performance metrics."""
+    print(f"Accuracy: {accuracy:.2f}")
+    print(f"Precision: {precision:.2f}")
+    print(f"Recall: {recall:.2f}")
+    print(f"F1 Score: {f1:.2f}")
+    print("Confusion Matrix:")
+    print(conf_matrix)
+
 def main():
 
     #Step 1: Load the classification data
