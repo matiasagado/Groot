@@ -47,5 +47,8 @@ def main():
         # Step 2: Extract labels
         true_labels, predicted_lables = extract_labels(data)
 
+        # Step 3: Calculate metrics
+        accuracy, precision, recall, f1, conf_matrix = calculate_metrics(true_labels, predicted_labels)
+
 if __name__ == '__main__':
     main()
