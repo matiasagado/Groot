@@ -1,0 +1,22 @@
+[
+    {
+        "log": "2019/04/13 16:19:19 [error] 20380#20380: *4 open() \"/var/www/portfolio/public/images/icons/iphone/iphone-8.png\" failed (2: No such file or directory), client: 83.28.244.168, server: jakubdev.pl, request: \"GET /$",
+        "is_normal": false
+    },
+    {
+        "log": "2013/12/24 12:23:03 [error] 17792#0: *537 open() \"/wwwjail/siteroot/test/htdocs/css/jqplot.css\" failed (2: No such file or directory), client: myIP, server: domain.fr, request: \"GET /css/jqplot.css HTTP/1.1\", host: \"IP:80\", referrer: \"http://IP:80/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2016/01/28 14:50:41 [error] 8319#0: *7 open() \"myservername/styles/bootstrap.css\" failed (2: No such file or directory), client: 127.0.0.1, server: myservername.com, request: \"GET /path/to/page/styles/bootstrap.css HTTP/1.1\", host: \"myservername.com\", referrer: \"http://myservername.com/sailsroute\"",
+        "is_normal": false
+    },
+    {
+        "log": "2016/08/28 11:20:56 [error] 24541#0: *9 FastCGI sent in stderr: \"PHP             message: PHP Fatal error:  Uncaught exception 'UnexpectedValueException' with  message 'The stream or file \"/www/laravel/storage/logs/laravel.log\" could not be  opened: failed to open stream: Permission denied' in    /www/laravel/vendor/monolog/monolog/src/Monolog/Handler/StreamHandler.php:107",
+        "is_normal": false
+    },
+    {
+        "log": "2013/09/05 16:31:59 [error] 29384#0: *2 open() \"/usr/share/nginx/vhosts/munin.mydomain.com/public_html/munin-cgi/munin-cgi-graph/mydomain.com/host.mydomain.com/postfix_mailvolume-pinpoint=1378299671,1378407671.png\" failed (2: No such file or directory), client: 10.30.2.1, server: munin.mydomain.com, request: \"GET /munin-cgi/munin-cgi-graph/mydomain.com/host.mydomain.com/postfix_mailvolume-pinpoint=1378299671,1378407671.png?&amp;lower_limit=&amp;upper_limit=&amp;size_x=800&amp;size_y=400 HTTP/1.1\", host: \"munin.mydomain.com\", referrer: \"http://munin.mydomain.com/static/dynazoom.html?cgiurl_graph=/munin-cgi/munin-cgi-graph&amp;plugin_name=mydomain.com/host.mydomain.com/postfix_mailvolume&amp;size_x=800&amp;size_y=400&amp;start_epoch=1378299671&amp;stop_epoch=1378407671\"",
+        "is_normal": false
+    }
+]

@@ -1,0 +1,54 @@
+[
+    {
+        "log": "[   12.713113] mgag200 0000:09:00.0: vgaarb: deactivate vga console",
+        "is_normal": true
+    },
+    {
+        "log": "21:04:43 [error] 6#6: *1 open() \"/etc/nginx/html/gitab\" failed (2: No such file or directory), client: 172.111.1.1, server: gitlab.edu.org, request: \"GET /gitab HTTP/1.1\", host: \"gitlab.edu.org\"",
+        "is_normal": false
+    },
+    {
+        "log": "2015/05/05 06:12:31 [error] 1185#0: *1625 open() \"/home/django/django_project/media/CACHE/images/images/ShanRoberts_NWales_Vitocal300A_cyxxLNn/fe87a38155418f621c48de1937234bdd.JPG\" failed (2: No such file or directory), client: 81.143.88.153, server: _, request: \"GET /media/CACHE/images/images/ShanRoberts_NWales_Vitocal300A_cyxxLNn/fe87a38155418f621c48de1937234bdd.JPG HTTP/1.1\", host: \"178.62.67.237\", referrer: \"http://178.62.67.237/admin/profiles/residentialreference/\"",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.231819] sd 0:0:4:0: [sdd] tag#177 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+        "is_normal": true
+    },
+    {
+        "log": "2094#2094: *19 open socket #10 left in connection 4",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.837004] EDAC MC0: Giving out device to module sb_edac controller Haswell SrcID#0_Ha#0: DEV 0000:7f:12.0 (INTERRUPT)",
+        "is_normal": true
+    },
+    {
+        "log": "2016/08/09 06:31:30 [error] 998#0: *143 open() \"/home/django/django_project/django_project/static/img/pricing.png\" failed (2: No such file or directory), client: 89.103.231.4, server: _, request: \"GET /static/img/pricing.png HTTP/1.1\", host: \"37.139.20.125\", referrer: \"http://37.139.20.125/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2016/10/04 21:12:26 [error] 10028#10028: *64 open() \"/opt/streaming/www/baycam1/high/scripts/custom.css\" failed (2: No such file or directory), client: 192.168.68.35, server: _, request: \"GET /baycam1/high/scripts/custom.css HTTP/1.1\", host: \"stream.foo.bar\", referrer: \"http://stream.foo.bar/baycam1/high/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2021/11/14 09:09:08 [error] 303783#303783: *4 open() &quot;/home/briansia/django_blog/media/media/profile_pics/yasharn_r5D4eQk.jpg&quot; failed (2: No such file or directory)",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.640447] ipmi_si: IPMI System Interface driver",
+        "is_normal": true
+    },
+    {
+        "log": "2016/12/10 17:41:55 [error] 12773#12773: *55 open() \"/home/urban/static/img/project_savings.png\" failed (2: No such file or directory), client: 24.11.95.201, server: 138.197.19.209, request: \"GET /static/img/project_savings.png HTTP/1.1\", host: \"138.197.19.209\", referrer: \"http://138.197.19.209/vizes/Projects\"",
+        "is_normal": false
+    },
+    {
+        "log": "2017/06/12 16:40:00 [alert] 30879#30879: *406 open socket #16 left in connection 23",
+        "is_normal": false
+    },
+    {
+        "log": "[error] 7#7: *3 open() \"/projects/src/v3.0\" failed (2: No such file or directory)",
+        "is_normal": false
+    }
+]
