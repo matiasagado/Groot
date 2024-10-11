@@ -6,7 +6,7 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 # Define the paths (adjust the path according to your file structure)
-json_file_path = os.path.join(os.getcwd(), '../../backend/src/classification_files.json')
+json_file_path = os.path.join(os.getcwd(), '../../backend/src/classification_results.json')
 
 def load_classification_data(file_path):
     """
