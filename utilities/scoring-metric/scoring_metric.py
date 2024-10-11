@@ -124,7 +124,7 @@ def save_results(true_labels, predicted_labels, accuracy, precision, recall, f1,
     }
 
     # Save the dictionary to a JSON file
-    with open('classification_results.json', 'w') as json_file:
+    with open('metric_results.json', 'w') as json_file:
         json.dump(results, json_file, indent=4)
 
 def main():
