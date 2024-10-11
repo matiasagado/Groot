@@ -14,6 +14,10 @@ def load_classification_data(file_path):
     Returns:
         - data: A list of dictionaries, each containing 'classification' and 'log_line'.
     """
+    if not os.path.exists(file_path):
+        print(f"File not found: {file_path}")
+        return []
+
     try:
         # Open the file and load the JSON content
         with open(file_path, 'r') as file:
