@@ -1,9 +1,9 @@
 import json
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 # Define the paths (adjust the path according to your file structure)
 json_file_path = os.path.join(os.getcwd(), '../../backend/src/classification_files.json')
@@ -106,24 +106,26 @@ def plot_confusion_matrix(conf_matrix):
 
 def save_results(true_labels, predicted_labels, accuracy, precision, recall, f1, conf_matrix):
     """
-    Save classification results and metrics to a CSV file.
-    Logs true labels, predicted labels, and metrics in a pandas DataFrame.
+    Save classification results and metrics to a JSON file.
+    Logs true labels, predicted labels, and metrics in a dictionary format and writes to a JSON file.
     """
-    # Create a pandas DataFrame for saving the results
-    df = pd.DataFrame({
-        'True Labels': true_labels,
-        'Predicted Labels': predicted_labels
-    })
-    
-    # Append metrics as a summary at the bottom of the CSV file
-    summary_df = pd.DataFrame({
-        'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
-        'Score': [accuracy, precision, recall, f1]
-    })
-    
-    # Save the results and summary to a CSV file
-    df.to_csv('classification_results.csv', index=False)
-    summary_df.to_csv('classification_results.csv', mode='a', header=True, index=False)
+    # Create a dictionary with the results and metrics
+    results = {
+        'results': [
+            {'True Label': true, 'Predicted Label': pred} for true, pred in zip(true_labels, predicted_labels)
+        ],
+        'metrics': {
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1 Score': f1,
+            'Confusion Matrix': conf_matrix.tolist()  # Convert to list for JSON serialization
+        }
+    }
+
+    # Save the dictionary to a JSON file
+    with open('classification_results.json', 'w') as json_file:
+        json.dump(results, json_file, indent=4)
 
 def main():
     """
@@ -133,7 +135,7 @@ def main():
         2. Extract true and predicted labels.
         3. Calculate performance metrics.
         4. Display and plot the metrics.
-        5. Save the results to a CSV file.
+        5. Save the results to a JSON file.
     """
     # Step 1: Load the classification data
     data = load_classification_data(json_file_path)
@@ -149,7 +151,7 @@ def main():
         display_metrics(accuracy, precision, recall, f1, conf_matrix)
         plot_confusion_matrix(conf_matrix)
 
-        # Step 5: Save the results to a CSV file
+        # Step 5: Save the results to a JSON file
         save_results(true_labels, predicted_labels, accuracy, precision, recall, f1, conf_matrix)
 
 if __name__ == '__main__':
