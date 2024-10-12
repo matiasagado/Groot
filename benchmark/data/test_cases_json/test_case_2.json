@@ -1,0 +1,62 @@
+[
+    {
+        "log": "2023/11/01 12:52:08 [error] 25#25: *3 open() &quot;/usr/share/nginx/html/static/style/bootstrap.min.css&quot; failed (2: No such file or directory), client: 172.24.0.1, server: 127.0.0.1, request: &quot;GET /static/style/bootstrap.min.css?v=0e8a7fbd6de23ad6b27ab95802a0a0915af6693af612bc304d83af445529ce5d95842309ca3405d10f538d45c8a3a261b8cff78b4bd512dd9effb4109a71d0ab HTTP/1.1&quot;, host: &quot;196.172.12.14&quot;, referrer: &quot;http://196.172.12.14/jupyter&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "2020/11/23 19:45:41 [error] 10#10: *224 open() &quot;/vol/static/static/core/css/homepage.css&quot; failed (2: No such file or directory), client: &lt;removed IP&gt;, server: , request: &quot;GET /static/static/core/css/homepage.css HTTP/1.1&quot;, host: &quot;&lt;removed IP&gt;:8000&quot;, referrer: &quot;http://&lt;removed IP&gt;:8000/&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.776803] Console: switching to colour frame buffer device 128x48",
+        "is_normal": true
+    },
+    {
+        "log": "2013/02/03 01:52:13 [error] 12293#0: *29 open() \"/var/www/vhosts/domain.lt/httpdocs/daiktai/kategorija/slaugos-ir-higienos-priemones/page/147\" failed (2: No such file or directory), client: 66.249.75.237, server: domain.lt, request: \"GET /daiktai/kategorija/slaugos-ir-higienos-priemones/page/147 HTTP/1.1\", host: \"www.domain.lt\"",
+        "is_normal": false
+    },
+    {
+        "log": "2012/09/02 13:06:19 [error] 2464#0: *3 open() \"/home/deployer/apps/fooapp/current/public/v1/api_session\" failed (2: No such file or directory), client: 127.0.0.1, server: localhost, request: \"POST /v1/api_session HTTP/1.1\", host: \"api.fooapp.net\"",
+        "is_normal": false
+    },
+    {
+        "log": "2020/08/10 11:22:36 [error] 110539#110539: *2 open() &quot;/usr/share/nginx/html404&quot; failed (2: No such file or directory), client: ###.###.###.###, server: example.com, request: &quot;GET /index.php HTTP/1.1&quot;, host: &quot;example.com&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "2016/09/15 22:04:40 [error] 4939#0: *1 open() \"/app/static/css/main.css\" failed (2: No such file or directory), client: 10.0.0.69, server: , request: \"GET /static/css/main.css HTTP/1.1\", host: \"nms-srv2\", referrer: \"http://nms-srv2/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2016/11/22 21:50:11 [debug] 1849#0: *1 open index \"/var/www/dev/portal/index.php\"",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.640447] ipmi_si: IPMI System Interface driver",
+        "is_normal": true
+    },
+    {
+        "log": "2020/12/20 13:57:15 [alert] 26013#26013: *2025 socket() failed (24: Too many open files) while connecting to upstream, client: 127.0.0.1, server: 127.0.0.1, request: &quot;GET / HTTP/1.0&quot;, upstream: &quot;http://127.0.0.1:8000/&quot;, host: &quot;localhost:8000&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "2019/10/02 15:38:09 [error] 869#0: *454 open() \"/ebs/www/TP/html/public/index.php\" failed (2: No such file or directory), client: 129.28.192.228, server: 52.69.23.227, request: \"GET /TP/html/public/index.php HTTP/1.1\", host: \"my_server_ip\"",
+        "is_normal": false
+    },
+    {
+        "log": "2013/05/15 10:21:37 [error] 2474#0: *1 FastCGI sent in stderr: \"Unable to open primary script: /usr/share/nginx/html/index.php (No such file or directory)\" while reading response header from upstream, client: 192.168.0.11, server: 192.168.0.80, request: \"GET /index.php HTTP/1.1\", upstream: \"fastcgi://127.0.0.1:9000\", host: \"192.168.0.80\"",
+        "is_normal": false
+    },
+    {
+        "log": "2022/12/17 23:05:41 [error] 5234#5234: *5 open() &quot;/home/user3/sites/vhost1/favicon.ico&quot; failed (13: Permission denied), client: 192.168.1.4, server: vhost1.com, request: &quot;GET /favicon.ico HTTP/1.1&quot;, host: &quot;pt.lo",
+        "is_normal": false
+    },
+    {
+        "log": "2019/08/25 20:41:29 [error] 28230#28230: *14 open() \"/home/admin_aljaz/patricija_website/media/image/20190816_184012.jpg\" failed (13: Permission denied), client: 78.153.61.113, server: 104.248.83.156, request: \"GET /media/image/20190816_184012.jpg HTTP/1.1\", host: \"104.248.83.156\", referrer: \"http://104.248.83.156/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2018/05/31 04:07:42 [crit] 32426#0: *120 open() \"/usr/share/nginx//var/www/sites-running/subsubdomain.subdomain.website.com/logs/nginx.access.log\" failed (2: No such file or directory) while logging request, client: **.***.***.***, server: *.subdomain.domain.com, request: \"GET /website/resources/ HTTP/1.1\", upstream: \"fastcgi://127.0.0.1:9000\", host: \"subsubdomain.subdomain.domain.com\", referrer: \"http://subsubdomain.subdomain.domain.com/website/\"",
+        "is_normal": false
+    }
+]

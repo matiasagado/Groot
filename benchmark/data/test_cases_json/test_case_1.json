@@ -1,0 +1,54 @@
+[
+    {
+        "log": "2017/02/24 11:42:38 [error] 32739#32739: *7 open() \"/var/www/html/affiliate/js/angular-animate.min.js.map\" failed (2: No such file or directory), client: 120.60.31.120, server: fossbyte.tk, request: \"GET /affiliate/js/angular-animate.min.js.map HTTP/1.1\", host: \"fossbytes.tk\"",
+        "is_normal": false
+    },
+    {
+        "log": "2017/06/12 16:18:43 [alert] 6099#6099: *1620652 open socket #21 left in connection 198",
+        "is_normal": false
+    },
+    {
+        "log": "2019/10/03 15:05:25 [error] 869#0: *530 open() \"/ebs/www/TP/html/public/index.php\" failed (2: No such file or directory), client: 222.186.130.20, server: 52.69.23.227, request: \"GET /TP/html/public/index.php HTTP/1.1\", host: \"my_server_ip\"",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.235918] sd 0:0:6:0: [sde] tag#67 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.853893] intel_rapl_common: package-0:dram:long_term locked by BIOS",
+        "is_normal": true
+    },
+    {
+        "log": "2015/01/22 13:52:38 [error] 2223#0: *4 failed to load external Lua file \"/Users/lobster/documents/web_server/./lua/main.lua\": cannot open /Users/lobster/documents/web_server/./lua/main.lua: Permission denied, client: 127.0.0.1, server: , request: \"GET / HTTP/1.1\", host: \"localhost:8080\"",
+        "is_normal": false
+    },
+    {
+        "log": "2014/04/08 04:20:11 [error] 22178#0: *590 open() \"/home/apps/myapp/staticgrappelli/stylesheets/mueller/grid/output.css\" failed (2: No such file or directory), client: 77.89.196.6, server: myapp.com, request: \"GET /static/grappelli/stylesheets/mueller/grid/output.css HTTP/1.1\", host: \"myapp.com\", referrer: \"http://myapp.com/admin/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2015/09/19 19:16:45 [error] 20716#0: *1 open() \"/var/www/myapp/public/assets/home01h-2416d3a81632df5d1854647d2eab530f81c6349dd4d15eda6c010592aafec815.jpg\" failed (2: No such file or directory), client: 190.48.126.22, server: myapp.work, request: \"GET /assets/home01h-2416d3a81632df5d1854647d2eab530f81c6349dd4d15eda6c010592aafec815.jpg HTTP/1.1\", host: \"myapp.work\", referrer: \"http://myapp.work/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2015/05/05 06:01:43 [error] 1185#0: *1565 open() \"/home/django/django_project/media/CACHE/images/images/ShanRoberts_NWales_Vitocal300A_reEvISt/66ad91e0b184febc1b8b71d00e67bff0.JPG\" failed (2: No such file or directory), client: 81.143.88.153, server: _, request: \"GET /media/CACHE/images/images/ShanRoberts_NWales_Vitocal300A_reEvISt/66ad91e0b184febc1b8b71d00e67bff0.JPG HTTP/1.1\", host: \"178.62.67.237\", referrer: \"http://178.62.67.237/admin/profiles/residentialreference/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2012/11/01 14:10:38 [error] 4552#0: *32 open() \"/var/www/mywebsite.com/web/error/404.html\" failed (2: No such file or directory), client: xx.xxx.xx.xxx, server: mywebsite.com, request: \"GET /favicon.ico HTTP/1.1\", host: \"mywebsite.com\"",
+        "is_normal": false
+    },
+    {
+        "log": "2016/08/02 18:19:03 [error] 5#5: *1 open() \"/usr/share/nginx/html/sockjs-node/info\" failed (2: No such file or directory), client: 10.0.2.2, server: localhost, request: \"GET /sockjs-node/info?t=1470161943983 HTTP/1.1\", host: \"localhost:8080\", referrer: \"http://localhost:8080/todos\"",
+        "is_normal": false
+    },
+    {
+        "log": "2021/06/05 07:34:28 [error] 13187#13187: *24 open() &quot;/home/aguero/lasfar/website/admin/frontend/assets/global.bundle.js&quot; failed (2: No such file or directory), client: 172.17.0.1, server: , request: &quot;GET /admin/frontend/assets/global.bundle.js HTTP/1.1&quot;, host: &quot;0.0.0.0:8080&quot;, referrer: &quot;http://0.0.0.0:8080/admin&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "2021/07/08 12:30:00 [crit] 11595#11595: *159 open() &quot;/media/cesium/nginx_tmp/0000000002&quot; failed (13: Permission denied), client: 192.168.20.180, server: _, request: &quot;POST /api/v1/terrain/5/uploadfile HTTP/1.0&quot;, host: &quot;192.168.20.201:14000&quot;, referrer: ...",
+        "is_normal": false
+    }
+]
