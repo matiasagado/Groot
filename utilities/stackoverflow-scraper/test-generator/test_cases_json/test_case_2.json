@@ -1,0 +1,54 @@
+[
+    {
+        "log": "nginx_1  | 2018/07/04 07:08:17 [error] 7#7: *1 open() \"/usr/share/nginx/html/404.html\" failed (2: No such file or directory), client: xx.xx.xx.xx, server: your-domain.com, request: \"GET /admin-portal/ HTTP/1.1\", host: \"xx.xx.xx.xx:8080\"",
+        "is_normal": false
+    },
+    {
+        "log": "2017/04/24 20:48:24 [error] 3277#0: *611 open() \"/var/www/html/moodle/theme/image.php/clean/core/1493057621/moodlelogo\" failed (20: Not a directory), client: 10.0.2.2, server: localhost, request: \"GET /theme/image.php/clean/core/1493057621/moodlelogo HTTP/1.1\", host: \"localhost:8080\", referrer: \"http://localhost:8080/index.php\"",
+        "is_normal": false
+    },
+    {
+        "log": "2020/10/02 06:08:08 [alert] 35#35: *94896 open socket #18 left in connection 71",
+        "is_normal": false
+    },
+    {
+        "log": "2018/03/06 00:10:04 [error] 5#5: *13 open() \"/usr/share/nginx/html/public/img/gears.gif\" failed (2: No such file or directory), client: 172.16.229.1, server: , request: \"GET /public/img/gears.gif HTTP/1.1\", host: \"172.16.229.174:8080\", referrer: \"http://172.16.229.174:8080/mongoui/\"",
+        "is_normal": false
+    },
+    {
+        "log": "2014/08/26 22:47:14 [error] 6424#0: *16 FastCGI sent in stderr: \"PHP message: PHP     Warning:  fopen(/usr/share/nginx/html/test.log): failed to open stream: Permission denied     in /usr/share/nginx/html/test.php on line 19\" while reading response header from upstream, client: XXXXXX, server: XXXXXXX, request: \"GET /test.php HTTP/1.1\", upstream: \"fastcgi://127.0.0.1:9000\", host: \"XXXXXXX\"",
+        "is_normal": false
+    },
+    {
+        "log": "03/16 00:30:11 [error] 24#24: *1 open() &quot;/etc/nginx/html/frontend_latest/core.a3d9350b.js&quot; failed (2: No such file or directory), client: 192.168.0.45, server: otto, request: &quot;GET /frontend_latest/core.a3d9350b.js HTTP/1.1&quot;, host: &quot;otto&quot;, referrer: &quot;http://otto/homeassistant/&quot;,",
+        "is_normal": false
+    },
+    {
+        "log": "2019/05/02 08:37:34 [error] 19105#0: *575827 FastCGI sent in stderr: \"PHP message: PHP Fatal error:  require(): Failed opening required '/var/www/domain.co.uk/resources/lib/class.autoloader.php' (include_path='.:/usr/share/php') in /var/www/www.anotherdomain.co.uk/config.php on line 84",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.215521] sd 0:0:4:0: [sdd] tag#177 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+        "is_normal": true
+    },
+    {
+        "log": "[error] 30149#0: *45 open() \"/var/www/users\" failed (2: No such file or directory), client: , server: mysite.com, request: \"GET /users HTTP/1.1\", host: \"mysite.com\"`",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.836703] EDAC sbridge: Seeking for: PCI ID 8086:2fa0",
+        "is_normal": true
+    },
+    {
+        "log": "2012/04/17 13:48:24 [error] 15598#0: *8 open() \"/etc/nginx/html/static/js/jquery$",
+        "is_normal": false
+    },
+    {
+        "log": "2020/02/09 07:03:14 [error] 5137#0: *4 open() \"/var/www/Yeeplus/logo512.png\" failed (13: Permission denied), client: 121.211.67.70, server: www.yeeplus.tk, request: \"GET /logo512.png HTTP/1.1\", host: \"yeeplus.tk\"",
+        "is_normal": false
+    },
+    {
+        "log": "as-web_1       | 2017/12/01 18:16:14 [error] 8#8: *2 open() \"/etc/nginx/html/index.html\" failed (2: No such file or directory), client: 172.24.0.1, server: , request: \"GET /fish/foo HTTP/1.1\", host: \"localhost\"",
+        "is_normal": false
+    }
+]

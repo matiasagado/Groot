@@ -1,0 +1,82 @@
+[
+    {
+        "log": "[   12.453795] input: PC Speaker as /devices/platform/pcspkr/input/input1",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.853884] intel_rapl_common: Found RAPL domain dram",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.720219] AVX2 version of gcm_enc/dec engaged.",
+        "is_normal": true
+    },
+    {
+        "log": "2022/06/23 19:30:05 [error] 12#12: *4085 open() &quot;/usr/share/nginx/html/version&quot; failed (2: No such file or directory), client: 172.17.0.1, server: localhost, request: &quot;GET /version?timeout=32s HTTP/1.1&quot;, host: &quot;localhost:8080&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.640533] ipmi_si dmi-ipmi-si.0: ipmi_platform: probing via SMBIOS",
+        "is_normal": true
+    },
+    {
+        "log": "proxy | 2021/01/05 00:00:38 [error] 21#21: *11 open() &quot;/etc/nginx/html/css/chunk-vendors.e78a06e5.css&quot; failed (2: No such file or directory), client: 172.19.0.1, server: apacbsa.com, request: &quot;GET /css/chunk-vendors.e78a06e5.css HTTP/1.1&quot;, host: &quot;localhost&quot;, referrer: &quot;http://localhost/auspost/&quot;",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.745184] snd_hda_intel 0000:04:00.1: Handle vga_switcheroo audio client",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.745169] snd_hda_intel 0000:04:00.1: Disabling MSI",
+        "is_normal": true
+    },
+    {
+        "log": "2021/11/14 09:09:08 [error] 303783#303783: *4 open() &quot;/home/briansia/django_blog/media/media/profile_pics/yasharn_r5D4eQk.jpg&quot; failed (2: No such file or directory)",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.205729]  (20230331/psparse-529)",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.836703] EDAC sbridge: Seeking for: PCI ID 8086:2fa0",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.837004] EDAC MC0: Giving out device to module sb_edac controller Haswell SrcID#0_Ha#0: DEV 0000:7f:12.0 (INTERRUPT)",
+        "is_normal": true
+    },
+    {
+        "log": "[   12.813557] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:02.0/0000:04:00.1/sound/card0/input2",
+        "is_normal": true
+    },
+    {
+        "log": "2019/06/20 11:06:46 [error] 22983#22983: *1 open() \"/home/webuser/DjangoProjects/web_project/media/media/profile_pics/StackOverFlowPicture_TL8URPF.png\" failed (2: No such file or directory), client: 109.132.217.176, server: example.com, request: \"GET /media/profile_pics/StackOverFlowPicture_TL8URPF.png HTTP/1.1\", host: \"example.com\", referrer: \"https://example.com/\"\\n",
+        "is_normal": false
+    },
+    {
+        "log": "2013/07/19 20:23:33 [error] 13583#0: *1 open() \"/var/www/test/htdocs/zabbix/css.css\" failed (2: No such file or directory), client: xxx, server: localhost, request: \"GET /zabbix/css.css HTTP/1.1\"",
+        "is_normal": false
+    },
+    {
+        "log": "2012/04/17 13:48:24 [error] 15598#0: *5 open() \"/etc/nginx/html/static/images/i$",
+        "is_normal": false
+    },
+    {
+        "log": "[   12.627147] RAPL PMU: hw unit of domain dram 2^-16 Joules",
+        "is_normal": true
+    },
+    {
+        "log": "2016/02/08 15:04:01 [error] 3439#0: *7 open() \"/usr/share/nginx/html/50x.html\" failed (2: No such file or directory), client: 10.129.3.105, server: localhost, request: \"GET /info.php HTTP/1.1\", upstream: \"fastcgi://unix:/var/run/php5-fpm.sock:\", host: \"10.129.3.198\"",
+        "is_normal": false
+    },
+    {
+        "log": "2018/05/31 13:04:19 [error] 11481#11481: *22 open()",
+        "is_normal": false
+    },
+    {
+        "log": "2020/06/22 18:41:39 [error] 863#863: *25 FastCGI sent in stderr: &quot;PHP message: PHP Warning:  require(/var/www/html/system/storage/vendor/composer/../react/promise/src/functions_include.php): failed to open stream: No such file or directory in /var/www/html/system/storage/vendor/composer/autoload_real.php on line 66",
+        "is_normal": false
+    }
+]
