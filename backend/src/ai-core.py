@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Example prompt template for Tabby API
-TABBY_API_URL = os.getenv('BERT_API_URL')
-TABBY_API_KEY = os.getenv('BERT_API_KEY')
+TABBY_API_URL = os.getenv('TABBY_API_URL')
+TABBY_API_KEY = os.getenv('TABBY_API_KEY')
 ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
 INPUT: 
 ```
