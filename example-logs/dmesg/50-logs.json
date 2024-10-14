@@ -1,0 +1,203 @@
+[
+    {
+      "log": "[   12.197159] sd 0:0:4:0: [sdd] tag#118 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.201307] sd 0:0:6:0: [sde] tag#125 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.203452] sd 0:0:3:0: [sdc] tag#64 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.203455] sd 0:0:3:0: [sdc] tag#64 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.205729]  (20230331/psparse-529)",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.214131] sd 0:0:6:0: [sde] tag#125 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.215521] sd 0:0:4:0: [sdd] tag#177 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.222911] ACPI: \\_SB_.PMI0: _PMC evaluation failed: AE_NOT_EXIST",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.231819] sd 0:0:4:0: [sdd] tag#177 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.235918] sd 0:0:6:0: [sde] tag#67 FAILED Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK cmd_age=0s",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.440875] sd 0:0:6:0: [sde] tag#67 CDB: ATA command pass through(16) 85 06 20 00 05 00 fe 00 00 00 00 00 00 40 ef 00",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.453795] input: PC Speaker as /devices/platform/pcspkr/input/input1",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.453817] dcdbas dcdbas: Dell Systems Management Base Driver (version 5.6.0-3.4)",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.594180] ipmi device interface",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.605729] RAPL PMU: API unit is 2^-32 Joules, 2 fixed counters, 655360 ms ovfl timer",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.616515] RAPL PMU: hw unit of domain package 2^-14 Joules",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.627147] RAPL PMU: hw unit of domain dram 2^-16 Joules",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.640447] mei_me 0000:00:16.0: Device doesn't have valid ME Interface",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.640447] ipmi_si: IPMI System Interface driver",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.640533] ipmi_si dmi-ipmi-si.0: ipmi_platform: probing via SMBIOS",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.671460] ipmi_platform: ipmi_si: SMBIOS: io 0xca8 regsize 1 spacing 4 irq 10",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.681724] ipmi_si: Adding SMBIOS-specified kcs state machine",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.691996] ipmi_si: Trying SMBIOS-specified kcs state machine at i/o address 0xca8, slave address 0x20, irq 10",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.702549] cryptd: max_cpu_qlen set to 1000",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.713081] Console: switching to colour dummy device 80x25",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.713113] mgag200 0000:09:00.0: vgaarb: deactivate vga console",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.720219] AVX2 version of gcm_enc/dec engaged.",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.720296] AES CTR mode by8 optimization enabled",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.723959] [drm] Initialized mgag200 1.0.0 20110418 for 0000:09:00.0 on minor 0",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.725970] fbcon: mgag200drmfb (fb0) is primary device",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.745169] snd_hda_intel 0000:04:00.1: Disabling MSI",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.745184] snd_hda_intel 0000:04:00.1: Handle vga_switcheroo audio client",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.776803] Console: switching to colour frame buffer device 128x48",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.813406] mgag200 0000:09:00.0: [drm] fb0: mgag200drmfb frame buffer device",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.813557] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:02.0/0000:04:00.1/sound/card0/input2",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.813667] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:02.0/0000:04:00.1/sound/card0/input3",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.836683] EDAC sbridge: Seeking for: PCI ID 8086:2fa0",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.836703] EDAC sbridge: Seeking for: PCI ID 8086:2fa0",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.852208] nvidia: module verification failed: signature and/or required key missing - tainting kernel",
+      "level": "Error"
+    },
+    {
+      "log": "[   12.837004] EDAC MC0: Giving out device to module sb_edac controller Haswell SrcID#0_Ha#0: DEV 0000:7f:12.0 (INTERRUPT)",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.853878] intel_rapl_common: Found RAPL domain package",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.853884] intel_rapl_common: Found RAPL domain dram",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.853889] intel_rapl_common: package-0:package:long_term locked by BIOS",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.853891] intel_rapl_common: package-0:package:short_term locked by BIOS",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.853893] intel_rapl_common: package-0:dram:long_term locked by BIOS",
+      "level": "INFO"
+    },
+    {
+      "log": "[   12.954105] nvidia-nvlink: Nvlink Core is being initialized, major device number 236",
+      "level": "INFO"
+    },
+    {
+      "log": "[   17.693683] vmbr0: port 1(eno1) entered blocking state",
+      "level": "INFO"
+    },
+    {
+      "log": "[   42.793331] cfg80211: failed to load regulatory.db",
+      "level": "Error"
+    },
+    {
+      "log": "[   46.871466] overlayfs: fs on '/var/lib/docker/overlay2/l/QLNXY74BSWSDEER4AZVBQGDRWR' does not support file handles, falling back to xino=off.",
+      "level": "Error"
+    },
+    {
+      "log": "[  939.740439] kauditd_printk_skb: 2 callbacks suppressed",
+      "level": "INFO"
+    }
+  ]
+  
