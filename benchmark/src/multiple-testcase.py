@@ -65,7 +65,7 @@ def generate_test_cases(normal_logs, error_logs, num_test_cases, lower_bound, up
 
 def main():
     # Setup argument parser
-    # EG) python3 generate_test_cases.py --num_test_cases 5 --lower_bound 5 --upper_bound 20
+    # EG) python3 multiple-testcase.py --num_test_cases 5 --lower_bound 5 --upper_bound 20
     # this will create 5 test cases (json format) with minimum of 5 loglines to max of 20 log lines
     # also could change the files for reading by argument
     parser = argparse.ArgumentParser(description='Generate test cases with log entries.')
