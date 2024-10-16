@@ -63,10 +63,7 @@ def extract_labels_and_predictions(true_data, llama_data):
         - true_labels: List of true classifications from the data ('INFO' or 'ERROR').
         - predicted_labels: List of classifications by LLama.
     """
-    # Extract true labels from the boolean values (True -> INFO, False -> ERROR)
     true_labels = ['INFO' if entry['is_normal'] else 'ERROR' for entry in true_data]
-    
-    # Extract predicted labels from LLama's output
     predicted_labels = [entry['classification'] for entry in llama_data]
     
     return true_labels, predicted_labels
@@ -134,36 +131,71 @@ def save_results(true_labels, predicted_labels, accuracy, precision, recall, f1,
     with open('metric_results.json', 'w') as json_file:
         json.dump(results, json_file, indent=4)
 
-def main(true_file, llama_file):
+def iterate_directory(true_dir, llama_dir):
     """
-    Main function to drive the log classification and performance evaluation using LLama predictions.
+    Iterate over directories containing JSON files of true labels and LLama predictions.
+    Matches files by filename and processes them one by one.
+    Accumulates labels across all files for aggregated metrics.
     """
-    # Load the true classification data (log with boolean values)
-    true_data = load_classification_data(true_file)
+    true_files = sorted([os.path.join(true_dir, f) for f in os.listdir(true_dir) if f.endswith('.json')])
+    llama_files = sorted([os.path.join(llama_dir, f) for f in os.listdir(llama_dir) if f.endswith('.json')])
 
-    # Load LLama's predicted classification data
+    if len(true_files) != len(llama_files):
+        print("Mismatch in the number of files between the true labels and LLama predictions directories.")
+        return
+
+    all_true_labels = []
+    all_predicted_labels = []
+
+    for true_file, llama_file in zip(true_files, llama_files):
+        print(f"Processing: {true_file} and {llama_file}")
+        true_data = load_classification_data(true_file)
+        llama_data = load_llama_classifications(llama_file)
+
+        if true_data and llama_data:
+            true_labels, predicted_labels = extract_labels_and_predictions(true_data, llama_data)
+            all_true_labels.extend(true_labels)
+            all_predicted_labels.extend(predicted_labels)
+
+    if all_true_labels and all_predicted_labels:
+        # Calculate and display metrics for all files combined
+        accuracy, precision, recall, f1, conf_matrix = calculate_metrics(all_true_labels, all_predicted_labels)
+        display_metrics(accuracy, precision, recall, f1, conf_matrix)
+        plot_confusion_matrix(conf_matrix)
+        save_results(all_true_labels, all_predicted_labels, accuracy, precision, recall, f1, conf_matrix)
+
+def process_files(true_file, llama_file):
+    """
+    Process a pair of true and predicted JSON files, calculate metrics, and display results.
+    """
+    true_data = load_classification_data(true_file)
     llama_data = load_llama_classifications(llama_file)
 
     if true_data and llama_data:
-        # Extract true and LLama's predicted labels
         true_labels, predicted_labels = extract_labels_and_predictions(true_data, llama_data)
-
-        # Calculate performance metrics
         accuracy, precision, recall, f1, conf_matrix = calculate_metrics(true_labels, predicted_labels)
-
-        # Display and plot the metrics
         display_metrics(accuracy, precision, recall, f1, conf_matrix)
         plot_confusion_matrix(conf_matrix)
-
-        # Save the results to a JSON file
         save_results(true_labels, predicted_labels, accuracy, precision, recall, f1, conf_matrix)
 
+def main(true_input, llama_input):
+    """
+    Main function that determines whether the inputs are directories or files.
+    Processes directories or files accordingly.
+    """
+    # Check if inputs are directories
+    if os.path.isdir(true_input) and os.path.isdir(llama_input):
+        iterate_directory(true_input, llama_input)
+    # Otherwise, assume they are individual files
+    elif os.path.isfile(true_input) and os.path.isfile(llama_input):
+        process_files(true_input, llama_input)
+    else:
+        print("Both inputs must be either directories or individual JSON files.")
+
 if __name__ == '__main__':
-    # Argument parser to take in the file paths
-    parser = argparse.ArgumentParser(description="Evaluate LLama's log classification performance.")
-    parser.add_argument('true_file', type=str, help="Path to the JSON file with true labels.")
-    parser.add_argument('llama_file', type=str, help="Path to the JSON file with LLama's predicted classifications.")
+    parser = argparse.ArgumentParser(description="Evaluate LLama's log classification performance using JSON files or directories.")
+    parser.add_argument('true_input', type=str, help="Path to the JSON file or directory with true labels.")
+    parser.add_argument('llama_input', type=str, help="Path to the JSON file or directory with LLama's predicted classifications.")
 
     args = parser.parse_args()
-    
-    main(args.true_file, args.llama_file)
+    main(args.true_input, args.llama_input)
