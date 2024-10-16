@@ -35,5 +35,7 @@ The output: json files will be saved to the output_directory in classified_test_
 Then the scoring.py will be execuated with command:
 python3 scoring.py test_cases_json classified_test_cases
 
+Which will read the true and predicted labels from the two json file and output a graph or data. If the argument is a directory
+it will aggregarte all the results from the different test cases into one score.
 
-Which will read the true and predicted labels from the two json file and output a graph or data.
+
