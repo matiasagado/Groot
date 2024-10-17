@@ -105,6 +105,9 @@ def process_log_file(file_path):
 
 if __name__ == "__main__":
 
+    # Change this so it will take in a directory called test_cases_json
+    # Iterate through and look at each test_case
+    # How would I know when a test case it done
     log_file_path = "output_logs.txt"
     output_file_path = "classification_results.json"
     clear_json_file(output_file_path)

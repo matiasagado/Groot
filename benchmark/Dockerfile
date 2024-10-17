@@ -1,12 +1,16 @@
 # Use a Python base image
 FROM python:3.11-alpine
 
-# Set the working directory inside the container
+COPY src/requirements.txt /app/requirements.txt
+
 WORKDIR /app
+
+RUN pip3 install -r ./requirements.txt
 
 # Copy the necessary files into the container
 
 COPY src/multiple-testcase.py /app
+# COPY src/ai-core.py /app
 COPY data/normal_logs.txt /app
 COPY data/error_logs.txt /app
 

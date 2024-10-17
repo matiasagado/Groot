@@ -12,18 +12,23 @@ except redis.ConnectionError:
     print("Failed to connect to Redis server.")
 
 list_key = "[nginx]"  # Replace with your list key
+
 # Change the range here for looking at different indexes. (E.G: looking at 0 index to 5)
-list_elements = r.lrange(list_key, 0, 5)
+list_elements = r.lrange(list_key, 0, 100)
+
 # Decode byte values (if they are stored as bytes)
 decoded_list_elements = [element.decode('utf-8') for element in list_elements]
+
 # Print the list elements
 print("List elements:")
+
 for element in decoded_list_elements:
     print(element)
 
 def extract_error_logs(text):
     # Define the regex pattern for extracting Nginx error log lines
     error_log_pattern = r'nginx:\s+[^\n]+'
+    #error_log_pattern = r'^\[\s*\d{1,}\.\d{6}\]\s.*$'
     
     # Use the findall method to extract all matching error log lines
     error_logs = re.findall(error_log_pattern, text)
