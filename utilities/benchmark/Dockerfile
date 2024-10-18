@@ -9,8 +9,10 @@ RUN pip3 install -r ./requirements.txt
 
 # Copy the necessary files into the container
 
-COPY src/multiple-testcase.py /app
-# COPY src/ai-core.py /app
+COPY src/multiple_testcase.py /app
+COPY src/benchmark.py /app
+COPY src/scoring_metric.py /app
+COPY src/ai_core.py /app
 COPY data/normal_logs.txt /app
 COPY data/error_logs.txt /app
 
@@ -18,4 +20,7 @@ COPY data/error_logs.txt /app
 # RUN pip install some-package
 
 # Specify the command to run when the container starts
-CMD python3 multiple-testcase.py --num_test_cases 5 --lower_bound 5 --upper_bound 20
+# CMD python3 multiple-testcase.py --num_test_cases 5 --lower_bound 5 --upper_bound 20
+
+# CMD python3 multiple-testcase.py --num_test_cases 5 --lower_bound 5 --upper_bound 20
+CMD python3 benchmark.py
