@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Example prompt template for Tabby API
 TABBY_API_URL = "http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions"
 TABBY_API_KEY = "aa"
-ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format CLASSIFICATION: INFO or CLASSIFICATION: ERROR.
+ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Anything in between such as a warning should be classified as INFO. Please end the response in this format CLASSIFICATION: INFO or CLASSIFICATION: ERROR. 
 INPUT: 
 {input}
 
@@ -96,6 +96,7 @@ def process_all_test_cases(directory_path, output_directory):
                 file_path = os.path.join(directory_path, file_name)
                 logger.info(f"Processing test case file: {file_path}")
                 process_test_case_file(file_path, output_directory)
+            break
 
     except Exception as e:
         logger.error(f"Error processing test case directory: {e}")

@@ -1,7 +1,7 @@
 import os
-from ai_core import process_all_test_cases  # From ai-core
+from ai_core import process_all_test_cases  
 from scoring_metric import load_classification_data, extract_labels, calculate_metrics, display_metrics, plot_confusion_matrix, save_results  # From scoring
-from multiple_testcase import generate_test_cases, read_logs  # From the test case generator
+from multiple_testcase import generate_test_cases, read_logs 
 
 def generate_test_cases_for_classification(normal_logs_file, error_logs_file, num_test_cases, lower_bound, upper_bound, test_case_output_dir):
     """
