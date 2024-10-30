@@ -30,3 +30,4 @@ if __name__ == "__main__":
     log_file_path = '/path/to/your/log/file.log'  # Change this to your log file path
     for log_line in read_log_file(log_file_path):
         logger.info(f"Log line: {log_line}")
+        
