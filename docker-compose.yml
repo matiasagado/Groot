@@ -1,11 +1,8 @@
-version: '3.8'
-
 services:
   ai-core:
     container_name: poc-ai-core
+    image: poc/ai-core:latest
     build: ./backend/ai-core
-    ports:
-      - "9000:9000"
     depends_on:
       - redis
     environment:
@@ -13,10 +10,10 @@ services:
       - REDIS_PORT=6379
       - OAI_TOKEN=aa
       - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
-    volumes:
-      - ./backend/src:/app
 
   log-preprocessor:
+    container_name: poc-log-preprocessor
+    image: poc/log-preprocessor:latest
     build: ./backend/log-preprocessor
     ports:
       - "9501:9501"
@@ -35,20 +32,34 @@ services:
       - clickhouse
       - redis
 
-  log-client:
+  mock-vector-client:
+    container_name: poc-mock-vector-client
+    image: poc/mock-vector-client:latest
+    build: ./mock-vector-client
+    environment:
+      - HTTP_SINK_URI="http://poc-log-preprocessor:9501/test/http_sink"
+    volumes:
+      - ./backend/mock-vector-client/nginx-logs:/var/log/nginx
     restart: no
+    depends_on:
+      - log-preprocessor
+
+  log-client:
     container_name: poc-log-client
+    image: poc/log-client:latest
     build: ./log-client
     volumes:
       - ./logs/dmesg/50-line.log:/logs/log.log
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    restart: no
     depends_on:
       - log-preprocessor
       - redis
 
   clickhouse:
+    container_name: poc-clickhouse
     image: clickhouse/clickhouse-server
     ports:
       - "8123:8123"
