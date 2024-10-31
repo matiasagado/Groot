@@ -5,7 +5,7 @@ import argparse
 
 def read_logs(file_path):
     """Reads logs from a file and returns them as a list of lines."""
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         return file.readlines()
 
 def sample_logs(logs, count):
