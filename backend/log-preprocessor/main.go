@@ -15,6 +15,10 @@ import (
 	"github.com/uptrace/go-clickhouse/chdebug"
 )
 
+var (
+	config *Config
+)
+
 // VectorLog represents the structure of your JSON data, with flexibility to handle optional and variable keys.
 type VectorLog struct {
 	Dt              time.Time              `json:"dt"`                     // To parse the datetime in Go-compatible format.
@@ -40,7 +44,12 @@ type ClickHouseVectorLog struct {
 }
 
 func submit_log_to_clickhouse(ctx context.Context, chLog *ClickHouseVectorLog) {
-	db := ch.Connect(ch.WithAddr("100.64.0.14:9000"), ch.WithDatabase("default"), ch.WithUser("test"), ch.WithPassword("password"))
+	db := ch.Connect(
+		ch.WithAddr(fmt.Sprintf("%s:%d", config.ClickHouse.Host, config.ClickHouse.Port)),
+		ch.WithDatabase(config.ClickHouse.Database),
+		ch.WithUser(config.ClickHouse.Username),
+		ch.WithPassword(config.ClickHouse.Password),
+	)
 	db.AddQueryHook(chdebug.NewQueryHook(chdebug.WithVerbose(true)))
 
 	if err := db.Ping(ctx); err != nil {
@@ -50,20 +59,19 @@ func submit_log_to_clickhouse(ctx context.Context, chLog *ClickHouseVectorLog) {
 	if _, err := db.NewInsert().Model(chLog).Exec(ctx); err != nil {
 		panic(err)
 	}
-
 }
 
 func submit_log_to_redis(ctx context.Context, vectorLog *VectorLog) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port),
+		Password: config.Redis.Password,
+		DB:       config.Redis.DB,
 	})
-	// rdb.RPush(ctx, "log_queue", "vectorLog.OriginalMessage")
+
 	_, err := rdb.RPush(ctx, "log_queue", vectorLog.OriginalMessage).Result()
 	if err != nil {
 		fmt.Println("Error pushing log to Redis:", err)
-		// Decide how to handle the error: log the error, return an error response, etc.
+		// TODO: Decide how to handle the error: log the error, return an error response, etc.
 	}
 }
 

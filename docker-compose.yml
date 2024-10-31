@@ -1,9 +1,9 @@
-version: '3'
+version: '3.8'
 
 services:
-  backend:
-    container_name: poc-backend
-    build: ./backend
+  ai-core:
+    container_name: poc-ai-core
+    build: ./backend/ai-core
     ports:
       - "9000:9000"
     depends_on:
@@ -13,9 +13,27 @@ services:
       - REDIS_PORT=6379
       - OAI_TOKEN=aa
       - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
-      - 
     volumes:
       - ./backend/src:/app
+
+  log-preprocessor:
+    build: ./backend/log-preprocessor
+    ports:
+      - "9501:9501"
+    environment:
+      - SERVER_PORT=9501
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=test
+      - CLICKHOUSE_PASS=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=
+      - REDIS_DB=0
+    depends_on:
+      - clickhouse
+      - redis
 
   log-client:
     restart: no
@@ -23,15 +41,25 @@ services:
     build: ./log-client
     volumes:
       - ./logs/dmesg/50-line.log:/logs/log.log
-    depends_on:
-      - backend
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    depends_on:
+      - log-preprocessor
+      - redis
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_USER=test
+      - CLICKHOUSE_PASSWORD=password
 
   redis:
     container_name: poc-redis
-    image: redis:latest
+    image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:

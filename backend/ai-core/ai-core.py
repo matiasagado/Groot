@@ -62,7 +62,6 @@ def classify_log_line(log_line, prompt_template):
         "execution_time": execution_time,
     }
 
-
 def fetch_items_from_redis_queue():
     # Adjusted for environment variables and added try-except
     try:
@@ -89,6 +88,9 @@ def main():
         logger.info(f"Processing item: {item}")
         result = classify_log_line(item, ONE_SHOT_PROMPT)
         logger.info(f'{result["classification"]}: {result["log_line"]}')
+
+        # TODO: These classifications need to be saved to a database in order to be useful
+        # Either send it back to the log-prepressor to then save it to the DB or save it to a database directly
 
 
 if __name__ == "__main__":
