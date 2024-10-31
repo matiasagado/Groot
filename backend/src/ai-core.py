@@ -14,9 +14,9 @@ logging.basicConfig(
 # Example usage
 logger = logging.getLogger(__name__)
 
-TABBY_CHAT_COMPLETION_URL = (
-    f"http://{os.getenv('TABBY_HOST')}:{os.getenv('TABBY_PORT')}/v1/chat/completions"
-)
+# Example prompt template for OpenAI Compatible API
+OAI_API_URL = os.getenv('OAI_API_URL')
+OAI_TOKEN = os.getenv('OAI_TOKEN')
 ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
 INPUT: 
 ```
@@ -35,14 +35,12 @@ def classify_log_line(log_line, prompt_template):
     payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.getenv('TABBY_API_KEY')}",
+        "Authorization": f"Bearer {OAI_TOKEN}",
     }
 
     try:
         start_time = time.time()
-        res = requests.post(
-            TABBY_CHAT_COMPLETION_URL, json=payload, headers=headers, timeout=10
-        )
+        res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
         execution_time = time.time() - start_time
         res.raise_for_status()
         prompt_result = res.json()["choices"][0]["message"]["content"]
@@ -95,4 +93,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

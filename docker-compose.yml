@@ -9,12 +9,11 @@ services:
     depends_on:
       - redis
     environment:
-      - REDIS_HOST=logparse-nix.internal-headscale.ucaia.com
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - TABBY_API_KEY=aa
-      - TABBY_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
-      - TABBY_HOST=100.64.0.14
-      - TABBY_PORT=5000
+      - OAI_TOKEN=aa
+      - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
+      - 
     volumes:
       - ./backend/src:/app
 

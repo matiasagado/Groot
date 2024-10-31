@@ -23,5 +23,5 @@ The current state of this is:
 
 1. Connect to our head/tailscale network (ask Erik / @StealthBadger747 for help)
 2. Create a Python venv for this project and install the `requirements.txt` file.
-3. Add the `TABBY_API_KEY` to the `docker-compose.yml`
+3. Add the `OAI_TOKEN` to the `docker-compose.yml`
 4. Now you can do `docker compose up --build` (the `--build` flag is important, otherwise changes will not be picked up).
