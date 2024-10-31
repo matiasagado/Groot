@@ -6,7 +6,7 @@ services:
     depends_on:
       - redis
     environment:
-      - REDIS_HOST=redis
+      - REDIS_HOST=poc-redis
       - REDIS_PORT=6379
       - OAI_TOKEN=aa
       - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
@@ -19,23 +19,24 @@ services:
       - "9501:9501"
     environment:
       - SERVER_PORT=9501
-      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_HOST=poc-clickhouse
       - CLICKHOUSE_PORT=9000
       - CLICKHOUSE_DB=default
-      - CLICKHOUSE_USER=test
+      - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASS=password
-      - REDIS_HOST=redis
+      - REDIS_HOST=poc-redis
       - REDIS_PORT=6379
       - REDIS_PASS=
       - REDIS_DB=0
     depends_on:
       - clickhouse
       - redis
+    # command: tail -f /dev/null
 
   mock-vector-client:
     container_name: poc-mock-vector-client
     image: poc/mock-vector-client:latest
-    build: ./mock-vector-client
+    build: ./backend/mock-vector-client
     environment:
       - HTTP_SINK_URI="http://poc-log-preprocessor:9501/test/http_sink"
     volumes:
@@ -44,20 +45,6 @@ services:
     depends_on:
       - log-preprocessor
 
-  log-client:
-    container_name: poc-log-client
-    image: poc/log-client:latest
-    build: ./log-client
-    volumes:
-      - ./logs/dmesg/50-line.log:/logs/log.log
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    restart: no
-    depends_on:
-      - log-preprocessor
-      - redis
-
   clickhouse:
     container_name: poc-clickhouse
     image: clickhouse/clickhouse-server
@@ -65,8 +52,14 @@ services:
       - "8123:8123"
       - "9000:9000"
     environment:
-      - CLICKHOUSE_USER=test
+      - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "$$CLICKHOUSE_USER", "--password", "$$CLICKHOUSE_PASSWORD", "-q", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     container_name: poc-redis
@@ -75,3 +68,9 @@ services:
       - "6379:6379"
     volumes:
       - ./container-data/redis/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

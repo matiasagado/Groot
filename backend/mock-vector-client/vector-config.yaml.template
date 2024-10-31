@@ -2,9 +2,10 @@ sources:
   nginx_logs:
     type: "file"
     read_from: "beginning"
-    ignore_older_secs: 600
+    # ignore_older_secs: 600
     include: ["/var/log/nginx/*.log"]
     exclude: ["/var/log/nginx/enhanced-access-json.log"]
+    oldest_first: true
 
 transforms:
   nginx_parser_for_preprocessor:
@@ -55,10 +56,10 @@ sinks:
   http_sink:
     type: "http"
     method: "post"
-    uri: "${HTTP_SINK_URI}"
+    uri: ${HTTP_SINK_URI}
     encoding:
       codec: "json"
     auth:
       strategy: "bearer"
       token: ""
-    inputs: ["custom_enhanced_logs"]
+    inputs: ["nginx_parser_for_preprocessor"]

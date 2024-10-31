@@ -2,78 +2,90 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/spf13/viper"
+	"os"
+	"strconv"
 )
 
 type Config struct {
 	Server struct {
-		Port int `mapstructure:"port"`
-	} `mapstructure:"server"`
+		Port int
+	}
 
 	ClickHouse struct {
-		Host     string `mapstructure:"host"`
-		Port     int    `mapstructure:"port"`
-		Database string `mapstructure:"database"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
-	} `mapstructure:"clickhouse"`
+		Host     string
+		Port     int
+		Database string
+		Username string
+		Password string
+	}
 
 	Redis struct {
-		Host     string `mapstructure:"host"`
-		Port     int    `mapstructure:"port"`
-		Password string `mapstructure:"password"`
-		DB       int    `mapstructure:"db"`
-	} `mapstructure:"redis"`
+		Host     string
+		Port     int
+		Password string
+		DB       int
+	}
 }
 
 func LoadConfig() (*Config, error) {
 	config := &Config{}
 
-	// Set default values
-	viper.SetDefault("server.port", 9501)
-	viper.SetDefault("clickhouse.port", 9000)
-	viper.SetDefault("clickhouse.database", "default")
-	viper.SetDefault("redis.port", 6379)
-	viper.SetDefault("redis.db", 0)
-
-	// Read from environment variables
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("APP")
-
-	// Map environment variables
-	envVars := map[string]string{
-		"SERVER_PORT":     "server.port",
-		"CLICKHOUSE_HOST": "clickhouse.host",
-		"CLICKHOUSE_PORT": "clickhouse.port",
-		"CLICKHOUSE_DB":   "clickhouse.database",
-		"CLICKHOUSE_USER": "clickhouse.username",
-		"CLICKHOUSE_PASS": "clickhouse.password",
-		"REDIS_HOST":      "redis.host",
-		"REDIS_PORT":      "redis.port",
-		"REDIS_PASS":      "redis.password",
-		"REDIS_DB":        "redis.db",
+	// Server configuration
+	serverPort, err := strconv.Atoi(getEnvWithDefault("SERVER_PORT", "9501"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid SERVER_PORT: %v", err)
 	}
+	config.Server.Port = serverPort
 
-	for env, path := range envVars {
-		err := viper.BindEnv(path, "APP_"+env)
-		if err != nil {
-			return nil, fmt.Errorf("error binding env var %s: %v", env, err)
-		}
-	}
-
-	// Read the config into our struct
-	if err := viper.Unmarshal(config); err != nil {
-		return nil, fmt.Errorf("error unmarshaling config: %v", err)
-	}
-
-	// Validate required configurations
+	// ClickHouse configuration
+	config.ClickHouse.Host = os.Getenv("CLICKHOUSE_HOST")
 	if config.ClickHouse.Host == "" {
 		return nil, fmt.Errorf("CLICKHOUSE_HOST is required")
 	}
+
+	clickhousePort, err := strconv.Atoi(getEnvWithDefault("CLICKHOUSE_PORT", "9000"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid CLICKHOUSE_PORT: %v", err)
+	}
+	config.ClickHouse.Port = clickhousePort
+
+	config.ClickHouse.Database = getEnvWithDefault("CLICKHOUSE_DB", "default")
+	config.ClickHouse.Username = getEnvWithDefault("CLICKHOUSE_USER", "default")
+	config.ClickHouse.Password = getEnvWithDefault("CLICKHOUSE_PASS", "")
+
+	// Redis configuration
+	config.Redis.Host = os.Getenv("REDIS_HOST")
 	if config.Redis.Host == "" {
 		return nil, fmt.Errorf("REDIS_HOST is required")
 	}
 
+	redisPort, err := strconv.Atoi(getEnvWithDefault("REDIS_PORT", "6379"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_PORT: %v", err)
+	}
+	config.Redis.Port = redisPort
+
+	config.Redis.Password = getEnvWithDefault("REDIS_PASS", "")
+
+	redisDB, err := strconv.Atoi(getEnvWithDefault("REDIS_DB", "0"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_DB: %v", err)
+	}
+	config.Redis.DB = redisDB
+
+	// Log the configuration for debugging
+	fmt.Printf("Configuration loaded:\n")
+	fmt.Printf("Server Port: %d\n", config.Server.Port)
+	fmt.Printf("ClickHouse: %s:%d\n", config.ClickHouse.Host, config.ClickHouse.Port)
+	fmt.Printf("Redis: %s:%d\n", config.Redis.Host, config.Redis.Port)
+
 	return config, nil
+}
+
+func getEnvWithDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }

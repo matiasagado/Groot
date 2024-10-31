@@ -7,19 +7,18 @@ WORKDIR /etc/vector
 # Copy the Vector configuration template
 COPY vector-config.yaml.template /etc/vector/vector-config.yaml.template
 
-# Install gettext-base for envsubst
-RUN apk add update --no-cache && \
-    apk add gettext
+# Install gettext for envsubst
+RUN apk update --no-cache && \
+    apk add --no-cache gettext && \
+    # Remove the default config file
+    rm -f /etc/vector/vector.yaml
 
 # Create the entrypoint script
-RUN echo '#!/bin/bash\n\
-envsubst < /etc/vector/vector-config.yaml.template > /etc/vector/vector.yaml\n\
-exec vector --config /etc/vector/vector.yaml\n'\
-> /entrypoint.sh && \
-chmod +x /entrypoint.sh
+RUN printf '#!/bin/sh\nenvsubst < /etc/vector/vector-config.yaml.template > /etc/vector/vector.yaml\ncat /etc/vector/vector.yaml\nexec vector --config /etc/vector/vector.yaml\n' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 # Set the default HTTP sink URI (can be overridden)
 ENV HTTP_SINK_URI="http://poc-log-preprocessor:9501/test/http_sink"
 
 # Use the custom entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
