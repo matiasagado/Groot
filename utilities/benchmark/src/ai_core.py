@@ -9,10 +9,10 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Example prompt template for Tabby API
-TABBY_API_URL = "http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions"
-TABBY_API_KEY = "aa"
-ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Anything in between such as a warning should be classified as INFO. Please end the response in this format CLASSIFICATION: INFO or CLASSIFICATION: ERROR. 
+# Example prompt template for OpenAI compatible API
+OAI_API_URL = "http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions"
+OAI_TOKEN = "aa"
+ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format CLASSIFICATION: INFO or CLASSIFICATION: ERROR.
 INPUT: 
 {input}
 
@@ -27,12 +27,12 @@ def classify_log_line(log_line, prompt_template):
     payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {TABBY_API_KEY}",
+        "Authorization": f"Bearer {OAI_TOKEN}",
     }
 
     try:
         start_time = time.time()
-        res = requests.post(TABBY_API_URL, json=payload, headers=headers, timeout=10)
+        res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
         execution_time = time.time() - start_time
         res.raise_for_status()
 

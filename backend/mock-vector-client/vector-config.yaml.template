@@ -1,0 +1,65 @@
+sources:
+  nginx_logs:
+    type: "file"
+    read_from: "beginning"
+    # ignore_older_secs: 600
+    include: ["/var/log/nginx/*.log"]
+    exclude: ["/var/log/nginx/enhanced-access-json.log"]
+    oldest_first: true
+
+transforms:
+  nginx_parser_for_preprocessor:
+    type: "remap"
+    inputs:
+      - "nginx_logs"
+    source: |
+      del(.source_type)
+      .dt = del(.timestamp)
+      .original_message = .message
+      .user_defined.nginx = parse_regex(.message, r'^\s*(-|(?P<client>\S+))\s+\-\s+(-|(?P<user>\S+))\s+\[(?P<timestamp>.+)\]\s+"(?P<request>(?P<method>\w+)\s+(?P<path>\S+)\s+(?P<protocol>\S+))"\s+(?P<status>\d+)\s+(?P<size>\d+)\s+"(-|(?P<referrer>.+))"\s+"(-|(?P<agent>.+))"\s*') ??
+          parse_regex(.message, r'^\s*(?P<timestamp>.+)\s+\[(?P<severity>\w+)\]\s+(?P<pid>\d+)\#(?P<tid>\d+):\s+\*(?P<cid>\d+)\s+(?P<message>.*)(?:,\s+client:\s+(?P<client>[^,z]+))(?:,\s+server:\s+(?P<server>[^,z]+))(?:,\s+request:\s+"(?P<request>[^"]+)")(?:,\s+subrequest:\s+"(?P<subrequest>[^"]+)")?(?:,\s+upstream:\s+"(?P<upstream>[^"]+)")?(?:,\s+host:\s+"(?P<host>[^"]+)")(?:,\s+referrer:\s+"(?P<referrer>[^"]+)")?\s*') ??
+          parse_nginx_log(.message, format: "combined") ??
+          parse_nginx_log(.message, format: "error") ??
+          {}
+
+      if .user_defined.nginx != {} {
+        .platform = "Nginx"
+        .level = del(.user_defined.nginx.severity)
+        .message = del(.user_defined.nginx.message)
+
+        if is_null(.message) { del(.message) }
+        if exists(.user_defined.nginx.timestamp) {
+          .dt = format_timestamp!(
+            parse_timestamp(.user_defined.nginx.timestamp, "%d/%b/%Y:%T %z") ??
+              parse_timestamp(.user_defined.nginx.timestamp, "%Y/%m/%d %T") ??
+              .dt,
+            "%+"
+          )
+
+          del(.user_defined.nginx.timestamp)
+        }
+
+        if is_string(.user_defined.nginx.status) { .user_defined.nginx.status = to_int(.user_defined.nginx.status) ?? .user_defined.nginx.status }
+        if is_string(.user_defined.nginx.size) { .user_defined.nginx.size = to_int(.user_defined.nginx.size) ?? .user_defined.nginx.size }
+        if is_string(.user_defined.nginx.cid) { .user_defined.nginx.cid = to_int(.user_defined.nginx.cid) ?? .user_defined.nginx.cid }
+        if is_string(.user_defined.nginx.pid) { .user_defined.nginx.pid = to_int(.user_defined.nginx.pid) ?? .user_defined.nginx.pid }
+        if is_string(.user_defined.nginx.tid) { .user_defined.nginx.tid = to_int(.user_defined.nginx.tid) ?? .user_defined.nginx.tid }
+
+        if is_null(.user_defined.nginx.subrequest) { del(.user_defined.nginx.subrequest) }
+        if is_null(.user_defined.nginx.upstream) { del(.user_defined.nginx.upstream) }
+        if is_null(.user_defined.nginx.referrer) { del(.user_defined.nginx.referrer) }
+      } else {
+        del(.user_defined.nginx)
+      }
+
+sinks:
+  http_sink:
+    type: "http"
+    method: "post"
+    uri: ${HTTP_SINK_URI}
+    encoding:
+      codec: "json"
+    auth:
+      strategy: "bearer"
+      token: ""
+    inputs: ["nginx_parser_for_preprocessor"]

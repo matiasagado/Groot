@@ -1,39 +1,76 @@
-version: '3'
-
 services:
-  backend:
-    container_name: poc-backend
-    build: ./backend
-    ports:
-      - "9000:9000"
+  ai-core:
+    container_name: poc-ai-core
+    image: poc/ai-core:latest
+    build: ./backend/ai-core
     depends_on:
       - redis
     environment:
-      - REDIS_HOST=logparse-nix.internal-headscale.ucaia.com
+      - REDIS_HOST=poc-redis
       - REDIS_PORT=6379
-      - TABBY_API_KEY=aa
-      - TABBY_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
-      - TABBY_HOST=100.64.0.14
-      - TABBY_PORT=5000
-    volumes:
-      - ./backend/src:/app
+      - OAI_TOKEN=aa
+      - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
 
-  log-client:
-    restart: no
-    container_name: poc-log-client
-    build: ./log-client
-    volumes:
-      - ./logs/dmesg/50-line.log:/logs/log.log
-    depends_on:
-      - backend
+  log-preprocessor:
+    container_name: poc-log-preprocessor
+    image: poc/log-preprocessor:latest
+    build: ./backend/log-preprocessor
+    ports:
+      - "9501:9501"
     environment:
-      - REDIS_HOST=redis
+      - SERVER_PORT=9501
+      - CLICKHOUSE_HOST=poc-clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASS=password
+      - REDIS_HOST=poc-redis
       - REDIS_PORT=6379
+      - REDIS_PASS=
+      - REDIS_DB=0
+    depends_on:
+      - clickhouse
+      - redis
+    # command: tail -f /dev/null
+
+  mock-vector-client:
+    container_name: poc-mock-vector-client
+    image: poc/mock-vector-client:latest
+    build: ./backend/mock-vector-client
+    environment:
+      - HTTP_SINK_URI="http://poc-log-preprocessor:9501/test/http_sink"
+    volumes:
+      - ./backend/mock-vector-client/nginx-logs:/var/log/nginx
+    restart: no
+    depends_on:
+      - log-preprocessor
+
+  clickhouse:
+    container_name: poc-clickhouse
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "$$CLICKHOUSE_USER", "--password", "$$CLICKHOUSE_PASSWORD", "-q", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     container_name: poc-redis
-    image: redis:latest
+    image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - ./container-data/redis/data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
