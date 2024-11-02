@@ -6,14 +6,16 @@ This is a proof of concept for our log parsing AI efforts.
 
 The current state of this is:
 
-1. A mock logger services publishes log lines to the Redis queue.
-2. Redis holds these log lines until the ai-core can consume them.
-3. The AI-Core when logs are available will pop a log off the queue one-by-one, processing each one until fetching the next one.
+1. A mock logger service (vector.dev and other ones) push logs to the log-preprocessor.
+2. The log-preprocessor both publishes log lines to the Redis queue and stores them long term in Clickhouse DB.
+3. Redis holds these log lines until the ai-core can consume them.
+4. The AI-Core when logs are available will pop a log off the queue one-by-one, processing each one until fetching the next one.
+5. 
 
 ### What is missing from this repo:
 
-- After much experimentation we are using [TabbyAPI](https://github.com/theroyallab/tabbyAPI) as the interface to our LLM. The engine it is using [ExLLamaV2](https://github.com/turboderp/exllamav2) to run the model.
-- The model we are using is a quantized version of Mixtral-instruct-8x7B. The model is on Huggingface as [Mixtral-8x7B-instruct-exl2](huggingface.co/turboderp/Mixtral-8x7B-instruct-exl2). It fits on the 2x RTX 3090 GPUs we have on MonsterMax.
+- ~~After much experimentation we are using [TabbyAPI](https://github.com/theroyallab/tabbyAPI) as the interface to our LLM. The engine it is using [ExLLamaV2](https://github.com/turboderp/exllamav2) to run the model.~~
+- The LLM backends as they don't belong in here. We are using Ollama and Mozilla Ocho llamafile which are both open source model running backends that expose an OpenAI Compatible API.
 - A lot of the https://vector.dev configurations are not checked in here. There has been a lot of work done on those transformations.
 
 - Currently the database output needs to be built out. I'll update this when I complete that.
