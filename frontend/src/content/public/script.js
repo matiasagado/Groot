@@ -84,3 +84,6 @@ registerForm.addEventListener("submit", (e) => {
 			.join(""); // Display errors as separate lines
 	}
 });
+
+
+# a test
