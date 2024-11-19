@@ -1,4 +1,3 @@
-// DOM elements
 const container = document.querySelector(".container");
 const loginLink = document.querySelector(".login-link");
 const registerLink = document.querySelector(".register-link");
@@ -7,19 +6,19 @@ const iconClose = document.querySelector(".icon-close");
 
 // Event listeners for toggling between login and register forms
 registerLink.addEventListener("click", () => {
-	container.classList.add("active"); // Switch to register form
+	container.classList.add("active");
 });
 
 loginLink.addEventListener("click", () => {
-	container.classList.remove("active"); // Switch to login form
+	container.classList.remove("active");
 });
 
 btnPopUp.addEventListener("click", () => {
-	container.classList.add("active-popup"); // Show popup
+	container.classList.add("active-popup");
 });
 
 iconClose.addEventListener("click", () => {
-	container.classList.remove("active-popup"); // Close popup
+	container.classList.remove("active-popup");
 });
 
 // Password validation logic
@@ -35,18 +34,20 @@ const validatePassword = (password) => {
 		},
 	];
 
-	// Return an array of unmet criteria
-	return criteria
+	const errors = criteria
 		.filter((criterion) => !criterion.regex.test(password))
 		.map((criterion) => criterion.message);
+
+	return errors;
 };
 
-// Attach validation to the login form
-const loginForm = document.querySelector("#login-form");
-const passwordErrorLogin = loginForm.querySelector("#password-error-login");
+// Attach validation to the login button
+const loginForm = document.querySelector(".form-box.login form");
+const loginButton = loginForm.querySelector(".btn");
+const passwordErrorLogin = loginForm.querySelector("#password-error");
 
-loginForm.addEventListener("submit", (e) => {
-	const password = loginForm.querySelector("#password").value;
+loginButton.addEventListener("click", (e) => {
+	const password = loginForm.querySelector("input[type='password']").value;
 
 	// Clear previous error messages
 	passwordErrorLogin.textContent = "";
@@ -56,20 +57,19 @@ loginForm.addEventListener("submit", (e) => {
 
 	if (errors.length > 0) {
 		e.preventDefault(); // Prevent form submission
-		passwordErrorLogin.innerHTML = errors
-			.map((error) => `<p>${error}</p>`)
-			.join(""); // Display errors as separate lines
+		// Display the validation error messages
+		passwordErrorLogin.textContent =
+			"Password must meet the following criteria:\n" + errors.join("\n");
 	}
 });
 
-// Attach validation to the register form
-const registerForm = document.querySelector("#register-form");
-const passwordErrorRegister = registerForm.querySelector(
-	"#password-error-register"
-);
+// Attach validation to the register button
+const registerForm = document.querySelector(".form-box.register form");
+const registerButton = registerForm.querySelector(".btn");
+const passwordErrorRegister = registerForm.querySelector("#password-error");
 
-registerForm.addEventListener("submit", (e) => {
-	const password = registerForm.querySelector("#register-password").value;
+registerButton.addEventListener("click", (e) => {
+	const password = registerForm.querySelector("input[type='password']").value;
 
 	// Clear previous error messages
 	passwordErrorRegister.textContent = "";
@@ -79,11 +79,8 @@ registerForm.addEventListener("submit", (e) => {
 
 	if (errors.length > 0) {
 		e.preventDefault(); // Prevent form submission
-		passwordErrorRegister.innerHTML = errors
-			.map((error) => `<p>${error}</p>`)
-			.join(""); // Display errors as separate lines
+		// Display the validation error messages
+		passwordErrorRegister.textContent =
+			"Password must meet the following criteria:\n" + errors.join("\n");
 	}
 });
-
-
-# a test
