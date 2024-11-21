@@ -6,8 +6,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<title>Log In</title>
 		<link rel="stylesheet" href="./static/login-styles.css" />
-		<script src="https://unpkg.com/htmx.org@1.8.4"></script>
-		<!-- Add htmx script -->
+		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 	</head>
 	<body>
 		<header>
@@ -17,7 +16,8 @@
 					class="log-in-button"
 					aria-label="Login"
 					hx-get="#login-form"
-					hx-target=".container"
+					hx-target=".login-container"
+					hx-trigger="click"
 				>
 					Login
 				</button>
@@ -26,17 +26,14 @@
 		<div class="container">
 			<span
 				class="icon-close"
-				aria-label="Close"
-				hx-get="#close-popup"
-				hx-target=".container"
+				hx-trigger="click"
+				hx-get="#login-form"
+				hx-target=".login-container"
 			>
 				<ion-icon name="close"></ion-icon>
 			</span>
-			<div
-				class="form-box login"
-				hx-get="#login-form"
-				hx-target=".container"
-			>
+
+			<div class="form-box login">
 				<h2>Login</h2>
 				<form
 					id="login-form"
@@ -82,22 +79,20 @@
 					<button type="submit" class="btn">Login</button>
 					<div class="login-register">
 						<p>
-							Don't have an account?<a
+							Don't have an account?
+							<a
 								href="#"
 								class="register-link"
 								hx-get="#register-form"
-								hx-target=".container"
-								>&nbsp;Register</a
+								hx-target=".register-container"
+								hx-trigger="click"
+								>Register</a
 							>
 						</p>
 					</div>
 				</form>
 			</div>
-			<div
-				class="form-box register"
-				hx-get="#register-form"
-				hx-target=".container"
-			>
+			<div class="form-box register">
 				<h2>Register</h2>
 				<form
 					id="register-form"
@@ -159,18 +154,21 @@
 					<button type="submit" class="btn">Register</button>
 					<div class="login-register">
 						<p>
-							Already have an account?<a
+							Already have an account?
+							<a
 								href="#"
 								class="login-link"
 								hx-get="#login-form"
-								hx-target=".container"
-								>&nbsp;Login</a
+								hx-target=".login-container"
+								hx-trigger="click"
+								>Login</a
 							>
 						</p>
 					</div>
 				</form>
 			</div>
 		</div>
+
 		<script src="script.js"></script>
 		<script
 			type="module"
