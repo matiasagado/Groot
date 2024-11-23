@@ -4,10 +4,14 @@ import time
 import re
 import requests
 import logging
+import uuid
+import json
 from typing import Optional, Dict, Any
 from requests.exceptions import RequestException
 from redis.exceptions import RedisError
 from tenacity import retry, stop_after_attempt, wait_exponential
+from clickhouse_driver import Client
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,12 +21,19 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Configuration with defaults
 REDIS_CONFIG = {
     "host": os.getenv("REDIS_HOST", "localhost"),
     "port": int(os.getenv("REDIS_PORT", "6379")),
     "db": int(os.getenv("REDIS_DB", "0")),
     "decode_responses": True,
+}
+
+CLICKHOUSE_CONFIG = {
+    "host": os.getenv("CLICKHOUSE_HOST", "poc-clickhouse"),
+    "port": int(os.getenv("CLICKHOUSE_PORT", "9000")),
+    "database": os.getenv("CLICKHOUSE_DB", "default"),
+    "user": os.getenv("CLICKHOUSE_USER", "default"),
+    "password": os.getenv("CLICKHOUSE_PASSWORD", "password"),
 }
 
 OAI_API_URL = os.getenv('OAI_API_URL')
@@ -85,6 +96,43 @@ def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str,
         logger.error(f"Request failed: {e}")
         raise  # Let retry handle it
 
+def send_to_clickhouse(classified_log):
+    """Directly update the log entry in ClickHouse with classification result."""
+    # Connect to ClickHouse
+    client = Client(**CLICKHOUSE_CONFIG)
+
+    # extracted log line to get the UUID
+    log_line = classified_log["log_line"]
+
+    try:
+        log = json.loads(log_line)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to decode log_line as JSON: {e}")
+        return
+    
+    uuid_value = log.get("uuid")
+    logger.info(f"UUID type: {type(uuid_value)}, UUID value: {uuid_value}")
+    if uuid_value is None:
+        logger.error("UUID not found in log_line")
+        return
+
+    classification = classified_log["classification"]
+    
+    logger.info(f"Updating ai_classified_level for UUID {uuid_value} to {classification}")
+
+    query = """
+    ALTER TABLE user_log_data
+    UPDATE ai_classified_level = '{classification}'
+    WHERE uuid = '{uuid_value}'
+    """
+    query = query.format(classification=classification, uuid_value=uuid_value)
+
+    try:
+        client.execute(query)
+        logger.info(f"Successfully updated log for UUID {uuid_value} in ClickHouse.")
+    except Exception as e:
+        logger.error(f"Failed to update ClickHouse for UUID {uuid_value}: {e}")
+
 class RedisQueue:
     """Redis queue handler with connection management."""
     def __init__(self, queue_name: str = "log_queue"):
@@ -146,6 +194,8 @@ def main():
                 
                 if result:
                     logger.info(f'{result["classification"]}: {result["log_line"]}')
+                    
+                    send_to_clickhouse(result)  # Send as a list of logs
                 else:
                     logger.warning(f"Failed to classify item: {item}")
                 

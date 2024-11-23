@@ -52,10 +52,10 @@ services:
       - "8123:8123"
       - "9000:9000"
     environment:
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_PASSWORD=password
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: password
     healthcheck:
-      test: ["CMD", "clickhouse-client", "--user", "$$CLICKHOUSE_USER", "--password", "$$CLICKHOUSE_PASSWORD", "-q", "SELECT 1"]
+      test: ["CMD", "wget", "--spider", "-q", "localhost:8123/ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -66,11 +66,22 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-    volumes:
-      - ./container-data/redis/data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
       start_period: 5s
+
+  goose:
+    container_name: poc-goose
+    build: ./backend/goose
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      GOOSE_DRIVER: clickhouse
+      GOOSE_DBSTRING: "clickhouse://default:password@clickhouse:9000/default"
+    volumes:
+      - ./backend/migrations:/migrations
+    entrypoint: ["goose", "-dir", "/migrations", "up"]
