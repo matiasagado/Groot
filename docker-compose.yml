@@ -83,5 +83,5 @@ services:
       GOOSE_DRIVER: clickhouse
       GOOSE_DBSTRING: "clickhouse://default:password@clickhouse:9000/default"
     volumes:
-      - ./backend/migrations:/migrations
+      - ./backend/goose/migrations:/migrations
     entrypoint: ["goose", "-dir", "/migrations", "up"]

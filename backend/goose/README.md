@@ -184,3 +184,20 @@ Had to do with Redis keeping states between runs. Which was causing weird behavi
 Whether UUID is good with ClickhouseDB?
 
 UUID in ClickhouseDB are sorted by the second half of the UUID. When data is sorted by the second half of the UUID, it could introduce fragmentation in the data storage layout. While, also leading to poor insert performance. Overall, the only reason UUID would be useful for ClickhouseDB is the uniqueness. In the perspective of large incoming log data, UUID might be useful. However, for high-performance query operations it might be better idea to use simple integer index or other variables.
+
+## Nov/23/2024
+
+Fixed the path file in docker-compose for migrations
+
+Checking ClickhouseDB
+
+Terminal:
+```
+docker exec -it poc-clickhouse clickhouse-client --user=default --password=password --database=default
+```
+Clickhouse Server:
+```
+SELECT uuid, ai_classified_level, level
+FROM user_log_data
+LIMIT 10;
+```
