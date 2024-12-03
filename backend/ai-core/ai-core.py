@@ -38,12 +38,38 @@ CLICKHOUSE_CONFIG = {
 
 OAI_API_URL = os.getenv('OAI_API_URL')
 OAI_TOKEN = os.getenv('OAI_TOKEN')
+OAI_MODEL_NAME = os.getenv('OAI_MODEL_NAME')
 ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
 INPUT: 
 ```
 {input}
 ```
 """
+
+def build_response(response):
+    response_text = response.text
+    """ Build a coherent response string from streaming JSON entries. """
+    # Split the response by lines (each line is a separate JSON object)
+    lines = response_text.strip().split("\n")
+
+    # Try parsing each line as a JSON object
+    parsed_json_objects = []
+    for line in lines:
+        try:
+            parsed_json = json.loads(line)
+            parsed_json_objects.append(parsed_json)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error for line: {line}")
+            logger.error(f"Error: {e}")
+
+    # Build the full response from the parsed JSON objects
+    if parsed_json_objects: 
+        full_response = "".join(entry["response"] for entry in parsed_json_objects)
+        logger.info(full_response)
+    else:
+        logger.info("No valid JSON objects were parsed.")
+
+    return full_response
 
 def extract_classification(result_text: str) -> Optional[str]:
     """Extract classification from API response."""
@@ -59,42 +85,81 @@ def extract_classification(result_text: str) -> Optional[str]:
     wait=wait_exponential(multiplier=1, min=4, max=10),
     reraise=True
 )
+
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
     if not all([OAI_API_URL, OAI_TOKEN]):
         raise ValueError("Missing required environment variables: OAI_API_URL or OAI_TOKEN")
 
     prompt = prompt_template.format(input=log_line)
-    payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OAI_TOKEN}",
-    }
 
     try:
-        start_time = time.time()
-        res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
-        execution_time = time.time() - start_time
-        
-        res.raise_for_status()
-        prompt_result = res.json()["choices"][0]["message"]["content"]
-        classification = extract_classification(prompt_result)
-        
-        if classification is None:
-            logger.error(f"Classification not found in response: {prompt_result}")
-            return None
+            res = requests.post(
+                OAI_API_URL,
+                json={
+                    "model": OAI_MODEL_NAME,  # Specify the local LLM model name
+                    "prompt": prompt
+                }
+            )
+            res.raise_for_status()
+            
+            # Get response text and build the coherent response from the JSON lines
+            cleaned_response = build_response(res)
 
-        return {
-            "log_line": log_line,
-            "prompt_template": prompt_template,
-            "result": prompt_result,
-            "classification": classification,
-            "execution_time": execution_time,
+            # Extract classification from the coherent response
+            classification = extract_classification(cleaned_response)
+            if classification is None:
+                logger.info(f"Classification not found in response: {cleaned_response}")
+                return None
+
+            return {
+                "log_line": log_line,
+                "classification": classification
         }
 
     except RequestException as e:
         logger.error(f"Request failed: {e}")
         raise  # Let retry handle it
+
+
+
+
+
+
+
+
+#-----------------------------------------------------------------
+
+    # payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
+    # headers = {
+    #     "Content-Type": "application/json",
+    #     "Authorization": f"Bearer {OAI_TOKEN}",
+    # }
+
+    # try:
+    #     start_time = time.time()
+    #     res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
+    #     execution_time = time.time() - start_time
+        
+    #     res.raise_for_status()
+    #     prompt_result = res.json()["choices"][0]["message"]["content"]
+    #     classification = extract_classification(prompt_result)
+        
+    #     if classification is None:
+    #         logger.error(f"Classification not found in response: {prompt_result}")
+    #         return None
+
+    #     return {
+    #         "log_line": log_line,
+    #         "prompt_template": prompt_template,
+    #         "result": prompt_result,
+    #         "classification": classification,
+    #         "execution_time": execution_time,
+    #     }
+
+    # except RequestException as e:
+    #     logger.error(f"Request failed: {e}")
+    #     raise  # Let retry handle it
 
 def send_to_clickhouse(classified_log):
     """Directly update the log entry in ClickHouse with classification result."""
@@ -211,3 +276,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
