@@ -44,45 +44,6 @@ type Log struct {
 	UUID            [16]byte
 }
 
-
-func fetchClassifiedLogs(c echo.Context) error {
-    // SQL query to get classified logs
-    query := `
-        SELECT dt, original_message, ai_classified_level
-        FROM user_log_data
-        WHERE ai_classified_level IS NOT NULL;
-    `
-
-    // Execute the query
-    rows := make_clickhouse_query(query)
-    defer rows.Close()
-
-    // Generate table rows as HTML
-    var tableRows string
-    for rows.Next() {
-        var dt time.Time
-        var originalMessage string
-        var aiClassifiedLevel string
-
-        // Scan each row
-        if err := rows.Scan(&dt, &originalMessage, &aiClassifiedLevel); err != nil {
-            return c.String(http.StatusInternalServerError, "Failed to parse rows")
-        }
-
-		// Format `dt` as a string
-        formattedDt := dt.Format("2006-01-02 15:04:05") // Example: YYYY-MM-DD HH:mm:ss
-
-        // Append a table row for each log
-        tableRows += fmt.Sprintf(
-            "<tr><td>%s</td><td>%s</td><td>%s</td><td>ClickHouse</td></tr>",
-            formattedDt, aiClassifiedLevel, originalMessage,
-        )
-    }
-
-    // Return the rows as HTML
-    return c.HTML(http.StatusOK, tableRows)
-}
-
 func streamClassifiedLogs(c echo.Context) error {
 	fmt.Println("WebSocket connection established")
     // Upgrade the HTTP connection to WebSocket
