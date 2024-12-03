@@ -36,9 +36,10 @@ CLICKHOUSE_CONFIG = {
     "password": os.getenv("CLICKHOUSE_PASSWORD", "password"),
 }
 
-OAI_API_URL = os.getenv('OAI_API_URL')
-OAI_TOKEN = os.getenv('OAI_TOKEN')
-ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
+OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
+OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
+OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
+ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
 ```
 {input}
@@ -61,28 +62,29 @@ def extract_classification(result_text: str) -> Optional[str]:
 )
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
-    if not all([OAI_API_URL, OAI_TOKEN]):
-        raise ValueError("Missing required environment variables: OAI_API_URL or OAI_TOKEN")
+    if not all([OLLAMA_API_URL, OLLAMA_TOKEN]):
+        raise ValueError("Missing required environment variables: OLLAMA_API_URL or OLLAMA_TOKEN")
 
     prompt = prompt_template.format(input=log_line)
-    payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OAI_TOKEN}",
-    }
 
     try:
-        start_time = time.time()
-        res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
-        execution_time = time.time() - start_time
-        
-        res.raise_for_status()
-        prompt_result = res.json()["choices"][0]["message"]["content"]
-        classification = extract_classification(prompt_result)
-        
-        if classification is None:
-            logger.error(f"Classification not found in response: {prompt_result}")
-            return None
+            res = requests.post(
+                OAI_API_URL,
+                json={
+                    "model": OAI_MODEL_NAME,  # Specify the local LLM model name
+                    "prompt": prompt
+                }
+            )
+            res.raise_for_status()
+            
+            # Get response text and build the coherent response from the JSON lines
+            cleaned_response = build_response(res)
+
+            # Extract classification from the coherent response
+            classification = extract_classification(cleaned_response)
+            if classification is None:
+                logger.info(f"Classification not found in response: {cleaned_response}")
+                return None
 
         return {
             "log_line": log_line,

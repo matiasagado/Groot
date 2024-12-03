@@ -9,10 +9,9 @@ services:
     environment:
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
-      - OAI_TOKEN=aa
-      - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
-      - OAI_MODEL_NAME=deepseek-coder-v2
-    network_mode: host
+      - OLLAMA_TOKEN=aa
+      - OLLAMA_API_URL=http://erikp-desktop-nix.internal-headscale.ucaia.com:11434/api/generate
+      - OLLAMA_MODEL_NAME=deepseek-coder-v2
 
   log-preprocessor:
     container_name: poc-log-preprocessor
