@@ -4,12 +4,15 @@ services:
     image: poc/ai-core:latest
     build: ./backend/ai-core
     depends_on:
+      - clickhouse
       - redis
     environment:
-      - REDIS_HOST=poc-redis
+      - REDIS_HOST=localhost
       - REDIS_PORT=6379
       - OAI_TOKEN=aa
       - OAI_API_URL=http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions
+      - OAI_MODEL_NAME=deepseek-coder-v2
+    network_mode: host
 
   log-preprocessor:
     container_name: poc-log-preprocessor
@@ -29,9 +32,12 @@ services:
       - REDIS_PASS=
       - REDIS_DB=0
     depends_on:
-      - clickhouse
-      - redis
-    # command: tail -f /dev/null
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      goose:
+        condition: service_completed_successfully
 
   mock-vector-client:
     container_name: poc-mock-vector-client
@@ -44,6 +50,8 @@ services:
     restart: no
     depends_on:
       - log-preprocessor
+      - clickhouse
+      - redis
 
   clickhouse:
     container_name: poc-clickhouse
@@ -60,6 +68,22 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: poc-frontend
+    ports:
+      - "1323:1323"
+    environment:
+      - CLICKHOUSE_HOST=poc-clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASS=password
+      - CLICKHOUSE_DB=default
+    depends_on:
+      - clickhouse
 
   redis:
     container_name: poc-redis
@@ -85,3 +109,4 @@ services:
     volumes:
       - ./backend/goose/migrations:/migrations
     entrypoint: ["goose", "-dir", "/migrations", "up"]
+    restart: no
