@@ -9,6 +9,14 @@ import (
 	"github.com/uptrace/go-clickhouse/chdebug"
 )
 
+var (
+	clickhouseHost     = "localhost" // Replace with your host
+	clickhousePort     = "9000"           // Replace with your port
+	clickhouseDatabase = "default"        // Replace with your database name
+	clickhouseUser     = "default"        // Replace with your user
+	clickhousePassword = "password"       // Replace with your password
+)
+
 func make_clickhouse_query(queryString string) *ch.Rows {
 	// Set a timeout for the query
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -16,10 +24,10 @@ func make_clickhouse_query(queryString string) *ch.Rows {
 
 	// Connect to ClickHouse
 	db := ch.Connect(
-		ch.WithAddr("localhost:9000"),
-		ch.WithDatabase("default"),
-		ch.WithUser("default"),
-		ch.WithPassword("password"),
+		ch.WithAddr(fmt.Sprintf("%s:%s", clickhouseHost, clickhousePort)),
+		ch.WithDatabase(clickhouseDatabase),
+		ch.WithUser(clickhouseUser),
+		ch.WithPassword(clickhousePassword),
 	)
 	db.AddQueryHook(chdebug.NewQueryHook(chdebug.WithVerbose(true)))
 

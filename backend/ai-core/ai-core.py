@@ -36,9 +36,9 @@ CLICKHOUSE_CONFIG = {
     "password": os.getenv("CLICKHOUSE_PASSWORD", "password"),
 }
 
-OAI_API_URL = os.getenv('OAI_API_URL')
-OAI_TOKEN = os.getenv('OAI_TOKEN')
-OAI_MODEL_NAME = os.getenv('OAI_MODEL_NAME')
+OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
+OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
+OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
 ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
 {input}
@@ -87,16 +87,16 @@ def extract_classification(result_text: str) -> Optional[str]:
 
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
-    if not all([OAI_API_URL, OAI_TOKEN]):
-        raise ValueError("Missing required environment variables: OAI_API_URL or OAI_TOKEN")
+    if not all([OLLAMA_API_URL, OLLAMA_TOKEN]):
+        raise ValueError("Missing required environment variables: OLLAMA_API_URL or OLLAMA_TOKEN")
 
     prompt = prompt_template.format(input=log_line)
 
     try:
             res = requests.post(
-                OAI_API_URL,
+                OLLAMA_API_URL,
                 json={
-                    "model": OAI_MODEL_NAME,  # Specify the local LLM model name
+                    "model": OLLAMA_MODEL_NAME,  # Specify the local LLM model name
                     "prompt": prompt
                 }
             )
