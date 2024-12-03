@@ -39,11 +39,10 @@ CLICKHOUSE_CONFIG = {
 OAI_API_URL = os.getenv('OAI_API_URL')
 OAI_TOKEN = os.getenv('OAI_TOKEN')
 OAI_MODEL_NAME = os.getenv('OAI_MODEL_NAME')
-ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
+ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
-```
 {input}
-```
+
 """
 
 def build_response(response):
@@ -120,46 +119,6 @@ def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str,
     except RequestException as e:
         logger.error(f"Request failed: {e}")
         raise  # Let retry handle it
-
-
-
-
-
-
-
-
-#-----------------------------------------------------------------
-
-    # payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
-    # headers = {
-    #     "Content-Type": "application/json",
-    #     "Authorization": f"Bearer {OAI_TOKEN}",
-    # }
-
-    # try:
-    #     start_time = time.time()
-    #     res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
-    #     execution_time = time.time() - start_time
-        
-    #     res.raise_for_status()
-    #     prompt_result = res.json()["choices"][0]["message"]["content"]
-    #     classification = extract_classification(prompt_result)
-        
-    #     if classification is None:
-    #         logger.error(f"Classification not found in response: {prompt_result}")
-    #         return None
-
-    #     return {
-    #         "log_line": log_line,
-    #         "prompt_template": prompt_template,
-    #         "result": prompt_result,
-    #         "classification": classification,
-    #         "execution_time": execution_time,
-    #     }
-
-    # except RequestException as e:
-    #     logger.error(f"Request failed: {e}")
-    #     raise  # Let retry handle it
 
 def send_to_clickhouse(classified_log):
     """Directly update the log entry in ClickHouse with classification result."""
@@ -276,4 +235,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

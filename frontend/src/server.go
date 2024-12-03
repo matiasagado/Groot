@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"time"
 	"strconv"
@@ -45,44 +44,6 @@ type Log struct {
 	UUID            [16]byte
 }
 
-// e.POST("/filterLogs", filter)
-func filterLogs(c echo.Context) error {
-	// Get team and member from the query string
-	filter := c.FormValue("sql-filter")
-	println("SQL filter:", filter)
-
-	// default.vector_logs_experiment_2
-	query := fmt.Sprintf("FROM default.vector_logs_experiment_2 %s;", filter)
-	rows := make_clickhouse_query(query)
-	defer rows.Close()
-	var logRows []Log
-	for rows.Next() {
-		var logResult Log
-		// Ensure the order and types of the arguments match the database columns
-		if err := rows.Scan(
-			&logResult.Dt,
-			&logResult.File,
-			&logResult.Host,
-			&logResult.Level,
-			&logResult.UserDefined,
-			&logResult.OriginalMessage,
-			&logResult.Platform,
-			&logResult.UUID,
-		); err != nil {
-			log.Fatal(err) // Consider handling the error more gracefully
-		}
-		logRows = append(logRows, logResult)
-	}
-
-	println("Hello!")
-	// Render the template, check for errors
-	if err := c.Render(http.StatusOK, "log-row.html", logRows); err != nil {
-		c.Logger().Error(err) // Log the error
-		return c.String(http.StatusInternalServerError, "Error rendering template")
-	}
-
-	return nil
-}
 
 func fetchClassifiedLogs(c echo.Context) error {
     // SQL query to get classified logs
@@ -185,7 +146,6 @@ func main() {
 	e.Static("/", "content/public")
 	e.Static("/static", "content/public/static")
 
-	e.POST("/filterLogs", filterLogs)
 	e.GET("/classifiedLogsWebSocket", streamClassifiedLogs)
 
 	e.Logger.Fatal(e.Start("0.0.0.0:1323"))
