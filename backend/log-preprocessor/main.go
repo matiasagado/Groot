@@ -233,7 +233,6 @@ func vectorHttpSink(c echo.Context) error {
 	var chLogs []ClickHouseVectorLog
 	for i, log := range vectorLogs {
 		thisUuid := uuid.NewString()
-		baseTime := time.Now().UTC()
 
 		// Log the generated UUID for each log entry
 		c.Logger().Debugf("Generated UUID for log entry: %s", thisUuid)
@@ -247,9 +246,7 @@ func vectorHttpSink(c echo.Context) error {
 		}
 
 		chLog := ClickHouseVectorLog{
-			// Dt:              log.Dt,
-			// Dt:              time.Now().UTC().Add(15 * time.Second),
-			Dt:              baseTime.Add(15 * time.Second),
+			Dt:              log.Dt,
 			File:            log.File,
 			Host:            log.Host,
 			Level:           log.Level,

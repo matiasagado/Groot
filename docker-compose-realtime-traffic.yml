@@ -1,0 +1,157 @@
+services:
+  ai-core:
+    container_name: test-ai-core
+    image: test/ai-core:latest
+    build: ./backend/ai-core
+    depends_on:
+      - clickhouse
+      - redis
+    environment:
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - CLICKHOUSE_HOST=localhost
+      - OLLAMA_TOKEN=aa
+      - OLLAMA_API_URL=http://erikp-desktop-nix.internal-headscale.ucaia.com:11434/api/generate
+      - OLLAMA_MODEL_NAME=deepseek-coder-v2
+    network_mode: host
+
+  log-preprocessor:
+    container_name: test-log-preprocessor
+    image: test/log-preprocessor:latest
+    build: ./backend/log-preprocessor
+    ports:
+      - "9501:9501"
+    environment:
+      - SERVER_PORT=9501
+      - CLICKHOUSE_HOST=test-clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASS=password
+      - REDIS_HOST=test-redis
+      - REDIS_PORT=6379
+      - REDIS_PASS=
+      - REDIS_DB=0
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      goose:
+        condition: service_completed_successfully
+
+  clickhouse:
+    container_name: test-clickhouse
+    image: clickhouse/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "localhost:8123/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: test-frontend
+    ports:
+      - "1337:1323"
+    environment:
+      - CLICKHOUSE_HOST=localhost
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASS=password
+      - CLICKHOUSE_DB=default
+    depends_on:
+      - clickhouse
+
+  redis:
+    container_name: test-redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  goose:
+    container_name: test-goose
+    build: ./backend/goose
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    environment:
+      GOOSE_DRIVER: clickhouse
+      GOOSE_DBSTRING: "clickhouse://default:password@clickhouse:9000/default"
+    volumes:
+      - ./backend/goose/migrations:/migrations
+    entrypoint: ["goose", "-dir", "/migrations", "up"]
+    restart: no
+
+
+###### live logs
+
+  nginx:
+    container_name: test-nginx-server
+    build: ./backend/mock-nginx
+    ports:
+      - "8081:80"
+    expose:
+      - "80"
+    volumes:
+      # - ./backend/mock-vector-client/nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    # user: nginx
+
+  # traffic-generator:
+  #   container_name: test-traffic-generator
+  #   build: 
+  #     context: ./backend/traffic-generator
+  #     dockerfile: Dockerfile.traffic
+  #   depends_on:
+  #     - nginx
+  #   environment:
+  #     - NGINX_HOST=test-nginx-server
+  #     - NGINX_PORT=80
+  #     - REQUEST_INTERVAL=2.5
+  #     - ERROR_RATE=0.2
+
+  attack-simulator:
+    container_name: poc-attack-simulator
+    build: 
+      context: ./backend/traffic-generator
+      dockerfile: Dockerfile.attack
+    environment:
+      - NGINX_HOST=test-nginx-server
+      - NGINX_PORT=80
+      - REQUEST_INTERVAL=2
+      - ATTACK_RATE=0.8
+    depends_on:
+      - nginx
+
+  real-vector-client:
+    container_name: test-real-vector-client
+    build: ./backend/mock-vector-client
+    environment:
+      - HTTP_SINK_URI=http://test-log-preprocessor:9501/test/http_sink
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+    depends_on:
+      - nginx
+      - log-preprocessor
+      - clickhouse
+      - redis
+    user: root
+
+volumes:
+  nginx_logs:
