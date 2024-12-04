@@ -12,6 +12,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Template struct {
@@ -78,6 +79,17 @@ func findUserByEmail(email string) (*User, error) {
 	}
 	return &user, nil
 }
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
 func login(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -110,11 +122,13 @@ func login(c echo.Context) error {
 		})
 	}
 
-	if password != user.Password {
+	if !checkPasswordHash(password, user.Password) {
+		fmt.Printf("Password Invalid: %v", user.Password)
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 			"message": "Invalid credentials",
 		})
 	}
+
 	c.Response().Header().Set("HX-Redirect", "/index.html")
 	return c.NoContent(http.StatusSeeOther)
 }
@@ -144,8 +158,16 @@ func register(c echo.Context) error {
         })
     }
 
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "Failed to process password",
+		})
+	}
+
 	insertQuery := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
-	_, err := db.Exec(insertQuery, username, email, password)
+	_, err = db.Exec(insertQuery, username, email, hashedPassword)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.Code == sqlite3.ErrConstraint {
 			return c.JSON(http.StatusConflict, map[string]interface{}{
@@ -217,7 +239,7 @@ func main() {
 	e.GET("/goto-index", redirectToIndex)
 
 	e.GET("/", func(c echo.Context) error {
-		return c.File("content/public/index.html")
+		return c.File("content/public/login-page.html")
 	})
 
 	e.POST("/register", register)
