@@ -1,108 +1,153 @@
 body {
-    font-family: "Arial", sans-serif;
-    background: #f4f4f4;
-    margin: 0;
-    padding: 20px;
-  }
-  
-  .logs-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1 {
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .controls {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
+  font-family: "Arial", sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
 
-  #log-table-results .tr .td {
-    font-size: 9px;
-    font-style: monospace;
-  }
-  
-  #log-search {
-    padding: 10px;
-    margin-right: 10px;
-    width: 100%;
-    font-family: monospace;
-  }
-  #search-area button,
-  #refresh-export button {
-    padding: 10px;
-    margin-right: 10px;
-  }
-  
-  .log-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .log-header {
-    background: #eee;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-  }
-  
-  .log-entry {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .log-entry:nth-child(even) {
-    background: #f9f9f9;
-  }
-  
-  .toolbar-toggle-button {
-    width: 95px;
-    background-color: rgba(24, 24, 27, 0.9);
-    font-feature-settings: "zero";
-    transition-property: color, background-color, border-color,
-      text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 0.15s;
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-      rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
-    color: rgb(250, 250, 250);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    height: 31.9922px;
-    display: flex;
-    margin: 0px auto;
-    border: 0px solid rgb(228, 228, 231);
-    cursor: pointer;
-    appearance: button;
-    background-image: none;
-    text-transform: none;
-    font-family: __GeistSans_343187, __GeistSans_Fallback_343187, ui-sans-serif,
-      system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue",
-      Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol", "Noto Color Emoji";
-    font-variation-settings: normal;
-    box-sizing: border-box;
-  }
-  
-  .toolbar-toggle-button span {
-    display: block;
-    font-feature-settings: "zero";
-    border: 0px solid rgb(228, 228, 231);
-    box-sizing: border-box;
-  }
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #ffffff; /* White background for the box */
+  border: 1px solid #dee2e6; /* Border to define the box */
+  border-radius: 5px; /* Rounded corners for the box */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for the box */
+  margin-bottom: 20px; /* Space between the header and logs container */
+}
+
+.header-btn {
+  color: #000000; /* Text color inside the button */
+  margin-right: 10px; /* Space between buttons */
+  background-color: #ffffff;
+  padding: 0.5px 10px;
+  border-radius: 5px;
+}
+
+.left-group,
+.center-group,
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: 1px; /* Space between buttons in each group */
+}
+
+.center-group {
+  justify-content: center;
+  flex-grow: 1; /* Push the center group to the middle */
+}
+
+.left-group {
+  flex-grow: 0;
+}
+
+.right-group {
+  flex-grow: 0;
+  justify-content: flex-end;
+}
+
+
+.logs-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px; /* Rounded corners for the box */
+}
+
+h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+#log-table-results .tr .td {
+  font-size: 9px;
+  font-style: monospace;
+}
+
+#log-search {
+  padding: 10px;
+  margin-right: 10px;
+  width: 100%;
+  font-family: monospace;
+}
+
+#search-area button,
+#refresh-export button {
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-header {
+  background: #eee;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.log-entry {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.log-entry:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.toolbar-toggle-button {
+  width: 95px;
+  background-color: rgba(24, 24, 27, 0.9);
+  font-feature-settings: "zero";
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  color: rgb(250, 250, 250);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  height: 31.9922px;
+  display: flex;
+  margin: 0px auto;
+  border: 0px solid rgb(228, 228, 231);
+  cursor: pointer;
+  appearance: button;
+  background-image: none;
+  text-transform: none;
+  font-family: __GeistSans_343187, __GeistSans_Fallback_343187, ui-sans-serif,
+    system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  font-variation-settings: normal;
+  box-sizing: border-box;
+}
+
+.toolbar-toggle-button span {
+  display: block;
+  font-feature-settings: "zero";
+  border: 0px solid rgb(228, 228, 231);
+  box-sizing: border-box;
+}

@@ -12,40 +12,110 @@
 </head>
 
 <body>
+  <!-- Header with aligned buttons -->
+  <div class="header">
+    <div class="left-group">
+      <button id="live-btn" class="header-btn btn btn-secondary">Live</button>
+      <button id="refresh-btn" class="header-btn btn btn-secondary">Refresh</button>
+    </div>
+    <div class="center-group">
+      <div class="dropdown">
+        <button id="sort-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Sort</button>
+        <ul class="dropdown-menu">
+          <li>
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "timestamp"}' 
+              hx-target="#log-table-results" hx-swap="innerHTML">Timestamp</button>
+          </li>
+          <li>
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "severity"}' 
+              hx-target="#log-table-results" hx-swap="innerHTML">Severity</button>
+          </li>
+          <li>
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "source"}' 
+              hx-target="#log-table-results" hx-swap="innerHTML">Source</button>
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button id="filter-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
+        <div class="dropdown-menu">
+          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control" 
+            hx-post="/applyFilter" hx-trigger="change" hx-target="#log-table-results" hx-swap="innerHTML" />
+        </div>
+      </div>
+      <button id="clear-filters-btn" class="header-btn btn btn-secondary" hx-get="/clearFilters" 
+        hx-trigger="click" hx-target="#log-table-results" hx-swap="innerHTML">Clear Filter</button>
+    </div>
+    <div class="right-group">
+      <button id="logout-btn" class="header-btn btn btn-danger">Logout</button>
+    </div>
+  </div>
+
+  <!-- Logs Container -->
   <div class="logs-container">
     <h1 class="mt-3">Logs</h1>
-    <div class="d-flex justify-content-between my-2">
-      <form id="search-form" class="d-flex flex-grow-1">
-        <input type="text" name="sql-filter" id="log-search" class="form-control me-2" placeholder="Enter an SQL query to filter the logs">
-        <button type="submit" id="apply-filter" class="btn btn-secondary toolbar-toggle-button"
-        hx-post="/filterLogs"
-        hx-trigger="click"
-        hx-target="#log-table-results"
-        hx-swap="innerHTML"
-      >Apply filter</button>
-        <button type="button" id="clear-filter" class="btn btn-secondary toolbar-toggle-button">Clear filter</button>
-      </form>
-      <button id="refresh" class="btn btn-secondary toolbar-toggle-button">Refresh</button>
-    </div>
     <div class="table-responsive">
       <table class="table">
         <thead class="table-light">
           <tr>
             <th>Timestamp</th>
             <th>Level</th>
-            <th>Message</th>
             <th>Source</th>
+            <th>Message</th>
           </tr>
         </thead>
         <tbody id="log-table-results">
-          <tr>
-            <td>Nothing here for now</td>
-          </tr>
-          <!-- Repeat <tr> for as many logs as you have -->
         </tbody>
       </table>
     </div>
   </div>
+
+  <!-- WebSocket Script -->
+  <script>
+    // WebSocket connection
+    console.log("Attempting to connect to WebSocket...");
+    const socket = new WebSocket('ws://localhost:1323/classifiedLogsWebSocket');
+
+    // On WebSocket connection open
+    socket.onopen = function () {
+      console.log('WebSocket connection established');
+    };
+
+    // On receiving a message
+    socket.onmessage = function (event) {
+      console.log('Received log from WebSocket:', event.data);
+      const log = JSON.parse(event.data);
+
+      // Append log to the table
+      const logRow = `
+        <tr>
+          <td>${log.dt}</td>
+          <td>${log.ai_classified_level}</td>
+          <td>ClickHouse</td>
+          <td>${log.original_message}</td>
+        </tr>
+      `;
+      document.getElementById('log-table-results').insertAdjacentHTML('beforeend', logRow);
+    };
+
+    // On WebSocket error
+    socket.onerror = function (error) {
+      console.error('WebSocket error:', error);
+    };
+
+    // On WebSocket close
+    socket.onclose = function () {
+      console.log('WebSocket connection closed');
+    };
+
+    // Start "Live" button functionality
+    document.getElementById('live-btn').addEventListener('click', function () {
+      // Clear table contents
+      document.getElementById('log-table-results').innerHTML = '';
+      console.log('Live button clicked. Logs will update in real-time.');
+    });
+  </script>
+
 </body>
 
 </html>

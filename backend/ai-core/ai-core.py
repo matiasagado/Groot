@@ -40,11 +40,39 @@ OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
 OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
 OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
 ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
+OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
+OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
+OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
+ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
-```
 {input}
-```
+
 """
+
+def build_response(response):
+    response_text = response.text
+    """ Build a coherent response string from streaming JSON entries. """
+    # Split the response by lines (each line is a separate JSON object)
+    lines = response_text.strip().split("\n")
+
+    # Try parsing each line as a JSON object
+    parsed_json_objects = []
+    for line in lines:
+        try:
+            parsed_json = json.loads(line)
+            parsed_json_objects.append(parsed_json)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error for line: {line}")
+            logger.error(f"Error: {e}")
+
+    # Build the full response from the parsed JSON objects
+    if parsed_json_objects: 
+        full_response = "".join(entry["response"] for entry in parsed_json_objects)
+        logger.info(full_response)
+    else:
+        logger.info("No valid JSON objects were parsed.")
+
+    return full_response
 
 def extract_classification(result_text: str) -> Optional[str]:
     """Extract classification from API response."""
@@ -60,6 +88,7 @@ def extract_classification(result_text: str) -> Optional[str]:
     wait=wait_exponential(multiplier=1, min=4, max=10),
     reraise=True
 )
+
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
     if not all([OLLAMA_API_URL, OLLAMA_TOKEN]):
@@ -69,9 +98,9 @@ def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str,
 
     try:
             res = requests.post(
-                OAI_API_URL,
+                OLLAMA_API_URL,
                 json={
-                    "model": OAI_MODEL_NAME,  # Specify the local LLM model name
+                    "model": OLLAMA_MODEL_NAME,  # Specify the local LLM model name
                     "prompt": prompt
                 }
             )
@@ -86,12 +115,9 @@ def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str,
                 logger.info(f"Classification not found in response: {cleaned_response}")
                 return None
 
-        return {
-            "log_line": log_line,
-            "prompt_template": prompt_template,
-            "result": prompt_result,
-            "classification": classification,
-            "execution_time": execution_time,
+            return {
+                "log_line": log_line,
+                "classification": classification
         }
 
     except RequestException as e:

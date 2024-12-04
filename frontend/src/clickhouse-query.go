@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/uptrace/go-clickhouse/ch"
 	"github.com/uptrace/go-clickhouse/chdebug"
@@ -29,14 +31,15 @@ func make_clickhouse_query(queryString string) *ch.Rows {
 	)
 	db.AddQueryHook(chdebug.NewQueryHook(chdebug.WithVerbose(true)))
 
+	// Check connection to ClickHouse
 	if err := db.Ping(ctx); err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Failed to connect to ClickHouse: %v", err))
 	}
 
 	// Execute the query
 	rows, err := db.Query(queryString)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Query execution failed: %v", err))
 	}
 
 	return rows
