@@ -23,15 +23,15 @@
         <button id="sort-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Sort</button>
         <ul class="dropdown-menu">
           <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "timestamp"}' 
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "timestamp"}'
               hx-target="#log-table-results" hx-swap="innerHTML">Timestamp</button>
           </li>
           <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "severity"}' 
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "severity"}'
               hx-target="#log-table-results" hx-swap="innerHTML">Severity</button>
           </li>
           <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "source"}' 
+            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "source"}'
               hx-target="#log-table-results" hx-swap="innerHTML">Source</button>
           </li>
         </ul>
@@ -39,11 +39,11 @@
       <div class="dropdown">
         <button id="filter-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
         <div class="dropdown-menu">
-          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control" 
+          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control"
             hx-post="/applyFilter" hx-trigger="change" hx-target="#log-table-results" hx-swap="innerHTML" />
         </div>
       </div>
-      <button id="clear-filters-btn" class="header-btn btn btn-secondary" hx-get="/clearFilters" 
+      <button id="clear-filters-btn" class="header-btn btn btn-secondary" hx-get="/clearFilters"
         hx-trigger="click" hx-target="#log-table-results" hx-swap="innerHTML">Clear Filter</button>
     </div>
     <div class="right-group">
@@ -72,49 +72,47 @@
 
   <!-- WebSocket Script -->
   <script>
-    // WebSocket connection
-    console.log("Attempting to connect to WebSocket...");
-    const socket = new WebSocket('ws://localhost:1323/classifiedLogsWebSocket');
+	const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
+	const logsContainer = document.querySelector('.table-responsive');
 
-    // On WebSocket connection open
-    socket.onopen = function () {
-      console.log('WebSocket connection established');
-    };
+	ws.onmessage = function(event) {
+		const log = JSON.parse(event.data);
+		const logRow = document.createElement('div');
+		logRow.className = 'log-entry new-log-flash';
 
-    // On receiving a message
-    socket.onmessage = function (event) {
-      console.log('Received log from WebSocket:', event.data);
-      const log = JSON.parse(event.data);
+		logRow.innerHTML = `
+			<span>${log.dt}</span>
+			<span>${log.ai_classified_level}</span>
+			<span>System</span>
+			<span>${log.original_message}</span>
+		`;
 
-      // Append log to the table
-      const logRow = `
-        <tr>
-          <td>${log.dt}</td>
-          <td>${log.ai_classified_level}</td>
-          <td>ClickHouse</td>
-          <td>${log.original_message}</td>
-        </tr>
-      `;
-      document.getElementById('log-table-results').insertAdjacentHTML('beforeend', logRow);
-    };
+		logsContainer.appendChild(logRow);
 
-    // On WebSocket error
-    socket.onerror = function (error) {
-      console.error('WebSocket error:', error);
-    };
+		// Remove the animation class after it completes to allow future animations
+		setTimeout(() => {
+			logRow.classList.remove('new-log-flash');
+		}, 1000);
 
-    // On WebSocket close
-    socket.onclose = function () {
-      console.log('WebSocket connection closed');
-    };
+		// Optional: Limit the number of visible logs and remove older ones
+		const maxLogs = 100;
+		const logs = document.querySelectorAll('.log-entry');
+		if (logs.length > maxLogs) {
+			logs[0].remove();
+		}
 
-    // Start "Live" button functionality
-    document.getElementById('live-btn').addEventListener('click', function () {
-      // Clear table contents
-      document.getElementById('log-table-results').innerHTML = '';
-      console.log('Live button clicked. Logs will update in real-time.');
-    });
-  </script>
+		// Auto-scroll to bottom
+		logsContainer.scrollTop = logsContainer.scrollHeight;
+	};
+
+	ws.onerror = function(event) {
+		console.error('WebSocket error:', event);
+	};
+
+	ws.onclose = function(event) {
+		console.log('WebSocket connection closed:', event);
+	};
+	</script>
 
 </body>
 
