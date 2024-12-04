@@ -71,17 +71,20 @@
 						id="password-error-login"
 						class="error-message"
 						aria-live="polite"
-					></div>
+					>
+						error-login
+					</div>
 					<div class="remember-forgot">
 						<label><input type="checkbox" />Remember Me</label>
 						<a href="#">Forgot Password?</a>
 					</div>
-					<button type="submit" class="btn">Login</button>
+					<button type="submit" class="btn" hx-target="error-login">
+						Login
+					</button>
 					<div class="login-register">
 						<p>
 							Don't have an account?
 							<a
-								href="#"
 								class="register-link"
 								hx-get="#register-form"
 								hx-target=".register-container"
@@ -97,22 +100,22 @@
 				<form
 					id="register-form"
 					method="post"
-					action="/register"
 					hx-post="/register"
 					hx-target="#register-form"
+					hx-boost="true"
 				>
-					<div class="input-box">
+					<div class="register-box">
 						<span class="icon">
 							<ion-icon name="person"></ion-icon>
 						</span>
 						<input
 							type="text"
 							required
-							id="username"
+							id="register-username"
 							aria-label="Username"
-							name="username"
+							name="register-username"
 						/>
-						<label for="username">Username</label>
+						<label for="register-username">Username</label>
 					</div>
 					<div class="input-box">
 						<span class="icon">
@@ -144,7 +147,9 @@
 						id="password-error-register"
 						class="error-message"
 						aria-live="polite"
-					></div>
+					>
+						error-register
+					</div>
 					<div class="remember-forgot">
 						<label>
 							<input type="checkbox" />I agree to the
@@ -156,7 +161,6 @@
 						<p>
 							Already have an account?
 							<a
-								href="#"
 								class="login-link"
 								hx-get="#login-form"
 								hx-target=".login-container"

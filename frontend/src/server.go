@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mattn/go-sqlite3"
 )
 
 type Template struct {
@@ -36,19 +37,19 @@ func validatePassword(password string) []string {
 	var errors []string
 
 	if len(password) < 8 {
-		errors = append(errors, "At least 8 characters")
+		errors = append(errors, "At least 8 characters\n")
 	}
 
 	if !regexp.MustCompile(`[A-Z]`).MatchString(password) {
-		errors = append(errors, "At least one uppercase letter")
+		errors = append(errors, "At least one uppercase letter\n")
 	}
 
 	if !regexp.MustCompile(`[a-z]`).MatchString(password) {
-		errors = append(errors, "At least one lowercase letter")
+		errors = append(errors, "At least one lowercase letter\n")
 	}
 
 	if !regexp.MustCompile(`\d`).MatchString(password) {
-		errors = append(errors, "At least one number")
+		errors = append(errors, "At least one number\n")
 	}
 
 	if !regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`).MatchString(password) {
@@ -65,75 +66,100 @@ type User struct {
 
 
 func findUserByEmail(email string) (*User, error) {
-	// Assuming you have a global DB connection, replace `db` with your actual DB variable
 	var user User
 	query := "SELECT email, password FROM users WHERE email = ?"
 
-	// Execute the query
 	err := db.QueryRow(query, email).Scan(&user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// If no rows were found, return a custom error
 			return nil, fmt.Errorf("user not found")
 		}
-		// Return the actual error if there was a DB issue
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 	return &user, nil
 }
 func login(c echo.Context) error {
-	// Get the email and password from the request
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	// Validate the password (you can still keep this check)
+	if email == "" || password == "" {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Email and password are required",
+		})
+	}
+
 	errors := validatePassword(password)
 	if len(errors) > 0 {
+		errorMessage := "Password must have:\n"
+		errorMessage += "8 characters\n"
+		errorMessage += "One uppercase letter\n"
+		errorMessage += "One lowercase letter\n"
+		errorMessage += "One number\n"
+		errorMessage += "One special character"
+
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"message": "Password validation failed",
-			"errors":  errors,
+			"errorMessage": errorMessage,
 		})
 	}
 
-	// Query the database to find the user by email
-	user, err := findUserByEmail(email)  // Assuming you have a function that queries the DB
+	user, err := findUserByEmail(email)
 	if err != nil {
-		// Handle database error (e.g., user not found)
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 			"message": "Invalid credentials",
 		})
 	}
 
-	// Compare the entered password with the stored password
 	if password != user.Password {
-		// Passwords don't match
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 			"message": "Invalid credentials",
 		})
 	}
-
-	// If login is successful, redirect to index.html
-	return c.Redirect(http.StatusSeeOther, "/index.html")
+	c.Response().Header().Set("HX-Redirect", "/index.html")
+	return c.NoContent(http.StatusSeeOther)
 }
 
 func register(c echo.Context) error {
-	username := c.FormValue("username")
-	email := c.FormValue("email")
-	password := c.FormValue("password")
 
-	errors := validatePassword(password)
-	if len(errors) > 0 {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message": "Password validation failed",
-			"errors":  errors,
+    username := c.FormValue("username")
+    email := c.FormValue("register-email")
+    password := c.FormValue("register-password")
+
+    if username == "" || email == "" || password == "" {
+        return c.JSON(http.StatusBadRequest, map[string]interface{}{
+            "message": "Username, email, and password are required",
+        })
+    }
+
+    errors := validatePassword(password)
+    if len(errors) > 0 {
+        errorMessage := "Password must have:\n"
+        for _, error := range errors {
+            errorMessage += error
+        }
+
+        return c.JSON(http.StatusBadRequest, map[string]interface{}{
+            "message": "Password validation failed",
+            "errorMessage": errorMessage,
+        })
+    }
+
+	insertQuery := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
+	_, err := db.Exec(insertQuery, username, email, password)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.Code == sqlite3.ErrConstraint {
+			return c.JSON(http.StatusConflict, map[string]interface{}{
+				"message": "Email already exists",
+			})
+		}
+		log.Printf("Error inserting user into database: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"message": "Failed to register user",
 		})
 	}
 
-	fmt.Printf("Register attempt: Username: %s, Email: %s, Password: %s\n", username, email, password)
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "Registration successful",
-	})
+    c.Response().Header().Set("HX-Redirect", "/index.html")
+    return c.NoContent(http.StatusSeeOther)
 }
 
 func filterLogs(c echo.Context) error {
@@ -169,9 +195,15 @@ func filterLogs(c echo.Context) error {
 	return nil
 }
 
+func redirectToIndex(c echo.Context) error {
+    return c.File("content/public/index.html")
+}
+
+
 func main() {
 
 	initDB()
+	defer db.Close()
 	
 	e := echo.New()
 
@@ -182,12 +214,14 @@ func main() {
 	e.Static("/", "content/public")
 	e.Static("/static", "content/public/static")
 
+	e.GET("/goto-index", redirectToIndex)
+
 	e.GET("/", func(c echo.Context) error {
-		return c.File("content/public/login-page.html")
+		return c.File("content/public/index.html")
 	})
 
-	e.POST("/login", login)
 	e.POST("/register", register)
+	e.POST("/login", login)
 
 	e.POST("/filterLogs", filterLogs)
 
