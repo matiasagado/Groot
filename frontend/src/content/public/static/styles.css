@@ -100,13 +100,13 @@ h1 {
 
 @keyframes flashRow {
   0% {
-      background-color: #fff7e6;
+    background-color: #fff7e6;
   }
   50% {
-      background-color: #ffeb99;
+    background-color: #ffeb99;
   }
   100% {
-      background-color: transparent;
+    background-color: transparent;
   }
 }
 

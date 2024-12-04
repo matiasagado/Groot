@@ -72,47 +72,47 @@
 
   <!-- WebSocket Script -->
   <script>
-	const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
-	const logsContainer = document.querySelector('.table-responsive');
+  const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
+  const logsContainer = document.querySelector('.table-responsive');
 
-	ws.onmessage = function(event) {
-		const log = JSON.parse(event.data);
-		const logRow = document.createElement('div');
-		logRow.className = 'log-entry new-log-flash';
+  ws.onmessage = function(event) {
+    const log = JSON.parse(event.data);
+    const logRow = document.createElement('div');
+    logRow.className = 'log-entry new-log-flash';
 
-		logRow.innerHTML = `
-			<span>${log.dt}</span>
-			<span>${log.ai_classified_level}</span>
-			<span>System</span>
-			<span>${log.original_message}</span>
-		`;
+    logRow.innerHTML = `
+      <span>${log.dt}</span>
+      <span>${log.ai_classified_level}</span>
+      <span>System</span>
+      <span>${log.original_message}</span>
+    `;
 
-		logsContainer.appendChild(logRow);
+    logsContainer.appendChild(logRow);
 
-		// Remove the animation class after it completes to allow future animations
-		setTimeout(() => {
-			logRow.classList.remove('new-log-flash');
-		}, 1000);
+    // Remove the animation class after it completes to allow future animations
+    setTimeout(() => {
+      logRow.classList.remove('new-log-flash');
+    }, 1000);
 
-		// Optional: Limit the number of visible logs and remove older ones
-		const maxLogs = 100;
-		const logs = document.querySelectorAll('.log-entry');
-		if (logs.length > maxLogs) {
-			logs[0].remove();
-		}
+    // Optional: Limit the number of visible logs and remove older ones
+    const maxLogs = 100;
+    const logs = document.querySelectorAll('.log-entry');
+    if (logs.length > maxLogs) {
+      logs[0].remove();
+    }
 
-		// Auto-scroll to bottom
-		logsContainer.scrollTop = logsContainer.scrollHeight;
-	};
+    // Auto-scroll to bottom
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+  };
 
-	ws.onerror = function(event) {
-		console.error('WebSocket error:', event);
-	};
+  ws.onerror = function(event) {
+    console.error('WebSocket error:', event);
+  };
 
-	ws.onclose = function(event) {
-		console.log('WebSocket connection closed:', event);
-	};
-	</script>
+  ws.onclose = function(event) {
+    console.log('WebSocket connection closed:', event);
+  };
+  </script>
 
 </body>
 
