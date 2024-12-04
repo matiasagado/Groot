@@ -5,12 +5,17 @@
   font-family: "Arial", sans-serif;
 }
 
-body {
+/* body {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: url("background.jpg") no-repeat;
+  background: linear-gradient(
+      to right,
+      rgba(177, 177, 66, 0.5),
+      rgba(43, 43, 237, 0.5)
+    ),
+    url("./background.jpg");
   background-size: cover;
   background-position: center;
 }
@@ -21,11 +26,38 @@ header {
   left: 0;
   width: 100%;
   padding: 20px 100px;
+  background: linear-gradient(to right, rgb(177, 177, 66), rgb(43, 43, 237));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
+} */
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
   background: linear-gradient(
-    to right,
-    rgb(177, 177, 66),
-    rgb(43, 43, 237)
-  ); /* Gradient from yellow to blue */
+      to right,
+      rgba(0, 0, 0, 0.7),
+      rgba(43, 43, 237, 0.6)
+    ),
+    url("./background.jpg");
+  background-size: cover;
+  background-position: center;
+  font-family: "Arial", sans-serif;
+  color: #fff;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px 50px;
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -62,7 +94,7 @@ header {
   position: relative;
   width: 400px;
   height: 440px;
-  background: transparent;
+  background: white;
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
   backdrop-filter: blur(20px);
