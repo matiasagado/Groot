@@ -7,7 +7,7 @@ services:
       - clickhouse
       - redis
     environment:
-      - REDIS_HOST=localhost
+      - REDIS_HOST=poc-redis
       - REDIS_PORT=6379
       - OLLAMA_TOKEN=aa
       - OLLAMA_API_URL=http://erikp-desktop-nix.internal-headscale.ucaia.com:11434/api/generate
@@ -74,9 +74,9 @@ services:
       dockerfile: Dockerfile
     container_name: poc-frontend
     ports:
-      - "1323:1323"
+      - "1337:1323"
     environment:
-      - CLICKHOUSE_HOST=poc-clickhouse
+      - CLICKHOUSE_HOST=localhost
       - CLICKHOUSE_PORT=9000
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASS=password

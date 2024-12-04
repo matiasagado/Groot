@@ -40,10 +40,6 @@ OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
 OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
 OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
 ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
-OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
-OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
-OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
-ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
 {input}
 
