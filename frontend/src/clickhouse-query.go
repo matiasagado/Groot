@@ -10,14 +10,6 @@ import (
 	"github.com/uptrace/go-clickhouse/chdebug"
 )
 
-var (
-	clickhouseHost     = "localhost" // Replace with your host
-	clickhousePort     = "9000"           // Replace with your port
-	clickhouseDatabase = "default"        // Replace with your database name
-	clickhouseUser     = "default"        // Replace with your user
-	clickhousePassword = "password"       // Replace with your password
-)
-
 func make_clickhouse_query(queryString string) *ch.Rows {
 	// Load environment variables 
 	host := os.Getenv("CLICKHOUSE_HOST")
