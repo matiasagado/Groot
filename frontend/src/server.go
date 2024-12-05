@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -75,7 +76,6 @@ type User struct {
 	Password string
 }
 
-
 func findUserByEmail(email string) (*User, error) {
 	var user User
 	query := "SELECT email, password FROM users WHERE email = ?"
@@ -120,7 +120,7 @@ func login(c echo.Context) error {
 		errorMessage += "One special character"
 
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message": "Password validation failed",
+			"message":      "Password validation failed",
 			"errorMessage": errorMessage,
 		})
 	}
@@ -145,28 +145,28 @@ func login(c echo.Context) error {
 
 func register(c echo.Context) error {
 
-    username := c.FormValue("username")
-    email := c.FormValue("register-email")
-    password := c.FormValue("register-password")
+	username := c.FormValue("username")
+	email := c.FormValue("register-email")
+	password := c.FormValue("register-password")
 
-    if username == "" || email == "" || password == "" {
-        return c.JSON(http.StatusBadRequest, map[string]interface{}{
-            "message": "Username, email, and password are required",
-        })
-    }
+	if username == "" || email == "" || password == "" {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Username, email, and password are required",
+		})
+	}
 
-    errors := validatePassword(password)
-    if len(errors) > 0 {
-        errorMessage := "Password must have:\n"
-        for _, error := range errors {
-            errorMessage += error
-        }
+	errors := validatePassword(password)
+	if len(errors) > 0 {
+		errorMessage := "Password must have:\n"
+		for _, error := range errors {
+			errorMessage += error
+		}
 
-        return c.JSON(http.StatusBadRequest, map[string]interface{}{
-            "message": "Password validation failed",
-            "errorMessage": errorMessage,
-        })
-    }
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message":      "Password validation failed",
+			"errorMessage": errorMessage,
+		})
+	}
 
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
@@ -190,8 +190,8 @@ func register(c echo.Context) error {
 		})
 	}
 
-    c.Response().Header().Set("HX-Redirect", "/index.html")
-    return c.NoContent(http.StatusSeeOther)
+	c.Response().Header().Set("HX-Redirect", "/index.html")
+	return c.NoContent(http.StatusSeeOther)
 }
 
 func filterLogs(c echo.Context) error {
@@ -228,7 +228,7 @@ func filterLogs(c echo.Context) error {
 }
 
 func redirectToIndex(c echo.Context) error {
-    return c.File("content/public/index.html")
+	return c.File("content/public/index.html")
 }
 
 func streamClassifiedLogs(c echo.Context) error {
@@ -324,7 +324,7 @@ func main() {
 
 	initDB()
 	defer db.Close()
-	
+
 	e := echo.New()
 
 	e.Renderer = &Template{
