@@ -76,7 +76,7 @@ services:
     ports:
       - "1337:1323"
     environment:
-      - CLICKHOUSE_HOST=localhost
+      - CLICKHOUSE_HOST=poc-clickhouse
       - CLICKHOUSE_PORT=9000
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASS=password
