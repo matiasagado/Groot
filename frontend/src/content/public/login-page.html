@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Log In</title>
+		<link rel="stylesheet" href="./static/login-styles.css" />
+		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+	</head>
+	<body>
+		<header>
+			<h2 class="logo">LogParse AI</h2>
+			<nav class="navigation">
+				<button
+					class="log-in-button"
+					aria-label="Login"
+					hx-get="#login-form"
+					hx-target=".login-container"
+					hx-trigger="click"
+				>
+					Login
+				</button>
+			</nav>
+		</header>
+		<div class="container">
+			<span
+				class="icon-close"
+				hx-trigger="click"
+				hx-get="#login-form"
+				hx-target=".login-container"
+			>
+				<ion-icon name="close"></ion-icon>
+			</span>
+
+			<div class="form-box login">
+				<h2>Login</h2>
+				<form
+					id="login-form"
+					method="post"
+					hx-post="/login"
+					hx-target="#login-form"
+				>
+					<div class="input-box">
+						<span class="icon">
+							<ion-icon name="mail"></ion-icon>
+						</span>
+						<input
+							type="email"
+							required
+							id="email"
+							aria-label="Email"
+							name="email"
+						/>
+						<label for="email">Email</label>
+					</div>
+					<div class="input-box">
+						<span class="icon">
+							<ion-icon name="lock-closed"></ion-icon>
+						</span>
+						<input
+							type="password"
+							required
+							id="password"
+							aria-label="Password"
+							name="password"
+						/>
+						<label for="password">Password</label>
+					</div>
+					<div
+						id="password-error-login"
+						class="error-message"
+						aria-live="polite"
+					>
+						error-login
+					</div>
+					<div class="remember-forgot"></div>
+					<button type="submit" class="btn" hx-target="error-login">
+						Login
+					</button>
+					<div class="login-register">
+						<p>
+							Don't have an account?
+							<a
+								class="register-link"
+								hx-get="#register-form"
+								hx-target=".register-container"
+								hx-trigger="click"
+								>Register</a
+							>
+						</p>
+					</div>
+				</form>
+			</div>
+			<div class="form-box register">
+				<h2>Register</h2>
+				<form
+					id="register-form"
+					method="post"
+					hx-post="/register"
+					hx-target="#register-form"
+					hx-boost="true"
+				>
+					<div class="input-box">
+						<span class="icon">
+							<ion-icon name="person"></ion-icon>
+						</span>
+						<input
+							type="text"
+							required
+							id="username"
+							aria-label="Username"
+							name="username"
+						/>
+						<label for="register-username">Username</label>
+					</div>
+					<div class="input-box">
+						<span class="icon">
+							<ion-icon name="mail"></ion-icon>
+						</span>
+						<input
+							type="email"
+							required
+							id="register-email"
+							aria-label="Email"
+							name="register-email"
+						/>
+						<label for="register-email">Email</label>
+					</div>
+					<div class="input-box">
+						<span class="icon">
+							<ion-icon name="lock-closed"></ion-icon>
+						</span>
+						<input
+							type="password"
+							required
+							id="register-password"
+							aria-label="Password"
+							name="register-password"
+						/>
+						<label for="register-password">Password</label>
+					</div>
+					<div
+						id="password-error-register"
+						class="error-message"
+						aria-live="polite"
+					>
+						error-register
+					</div>
+					<div class="remember-forgot"></div>
+					<button type="submit" class="btn">Register</button>
+					<div class="login-register">
+						<p>
+							Already have an account?
+							<a
+								class="login-link"
+								hx-get="#login-form"
+								hx-target=".login-container"
+								hx-trigger="click"
+								>Login</a
+							>
+						</p>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<script src="script.js"></script>
+		<script
+			type="module"
+			src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+		></script>
+		<script
+			nomodule
+			src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+		></script>
+	</body>
+</html>
