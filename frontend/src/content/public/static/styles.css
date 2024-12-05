@@ -1,108 +1,288 @@
 body {
-    font-family: "Arial", sans-serif;
-    background: #f4f4f4;
-    margin: 0;
-    padding: 20px;
-  }
-  
-  .logs-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1 {
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .controls {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
+  font-family: "Arial", sans-serif;
+  background: #404699;
+  margin: 0;
+  padding: 0;
+  /*padding-top: 60px; /* Push the content below the top bar */
+}
 
-  #log-table-results .tr .td {
-    font-size: 9px;
-    font-style: monospace;
+/* Top Bar */
+.top-bar {
+  background-color: #1b205e;
+  color: white; /* White text */
+  height: 40px; /* Fixed height for the top bar */
+  line-height: 60px; /* Vertically align the text */
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  font-size: 25px;
+  font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  width: 100%; /* Ensures it spans the entire width */
+  margin: 0; /* Remove default margins */
+  box-sizing: border-box; /* Includes padding in width */
+}
+
+.top-bar .logout-btn {
+  background-color: #ffffff; /* Slightly lighter grey than the top bar */
+  color: rgb(0, 0, 0); /* White text */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Apple font stack */
+  font-size: 16px; /* Adjust the text size */
+  font-weight: bold;
+  border: none; /* Remove the border */
+  border-radius: 2px; /* Slight rounding */
+  padding: 10px 15px; /* Add padding for better clickability */
+  height: 28px; 
+  line-height: 20px; /* Adjust for centered text */
+  display: flex; /* Center the text inside the button */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; /* Pointer cursor for interactivity */
+  margin: 0; /* Remove default margins */
+}
+
+.top-bar .logout-btn:hover {
+  background-color: #cbcbcb; /* Slightly darker grey for hover effect */
+}
+
+
+.top-bar-title {
+  margin: 0;
+}
+
+.logs-container {
+  max-width: 1200px;
+  margin: 20px auto; /* Add spacing between top bar and logs container */
+  background: #ffffff;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px; /* Rounded corners for the box */
+}
+
+.logs-container h1 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 20px; /* Adjust font size */
+  font-weight: bold; /* Keep it bold */
+  color: #333; /* Text color */
+  margin: 0; /* Remove any margin */
+  padding-top: 3px; /* Add a small gap at the top */
+  text-align: left; /* Align text to the left */
+}
+
+.logs-container .controls {
+  display: flex;
+  flex-wrap: wrap; /* Allows buttons to wrap to the next line if needed */
+  justify-content: flex-start; /* Align buttons to the left */
+  gap: 10px; /* Space between buttons */
+  margin-bottom: 10px; /* Space below the buttons */
+  padding-top: 10px; /* Add space between the "Logs" header and the buttons */
+}
+
+.logs-container .controls button {
+  background-color: #5b5b5b; /* Slightly lighter grey than the top bar */
+  color: white; /* White text */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Apple font stack */
+  font-size: 14px; /* Adjust the text size */
+  font-weight: medium;
+  border: none; /* Remove the border */
+  border-radius: 3px; /* Slight rounding */
+  padding: 10px 15px; /* Add padding for better clickability */
+  height: 21px; 
+  line-height: 20px; /* Adjust for centered text */
+  display: flex; /* Center the text inside the button */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; /* Pointer cursor for interactivity */
+  margin: 0; /* Remove default margins */
+}
+
+.logs-container .controls button:hover {
+  background-color: #444444; /* Slightly darker grey on hover */
+  border-color: #868686; /* Adjust the border color on hover */
+}
+
+
+.header-btn {
+  color: #000000; /* Text color inside the button */
+  margin-right: 10px; /* Space between buttons */
+  background-color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.controls .left-group,
+.controls .center-group {
+  display: flex;
+  gap: 10px;
+}
+
+
+.center-group {
+  justify-content: center;
+  flex-grow: 1; /* Push the center group to the middle */
+}
+
+.left-group {
+  flex-grow: 0;
+}
+
+.right-group {
+  flex-grow: 0;
+  justify-content: flex-end;
+}
+
+/* Style for the entire log table */
+.table {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px; /* Adjust size as needed */
+  color: #333; /* Text color */
+}
+
+/* Style for the table headers (Timestamp, Level, etc.) */
+.table th {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px; /* Slightly larger for headers */
+  font-weight: bold;
+  color: #555; /* Header text color */
+  background-color: #f8f9fa; /* Light background for headers */
+  padding: 10px;
+}
+
+/* Style for the table rows (log content) */
+.table td {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px; /* Adjust size for content */
+  padding: 8px;
+  vertical-align: middle; /* Align text vertically */
+  color: #444; /* Row text color */
+}
+
+/* Style for alternating row background colors for better readability */
+.table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.logs-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  background: #ffffff;
+  padding: 1px 20px; /* Reduce top and bottom padding */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px; /* Rounded corners for the box */
+}
+
+.logs-container h1 {
+  margin-top: 0; /* Remove the top margin */
+  padding-top: 1px; /* Add a small padding for spacing */
+  font-size: 24px;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Apple's font */
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+#log-table-results .tr .td {
+  font-size: 9px;
+  font-style: monospace;
+}
+
+#log-search {
+  padding: 10px;
+  margin-right: 10px;
+  width: 100%;
+  font-family: monospace;
+}
+
+#search-area button,
+#refresh-export button {
+  padding: 10px;
+  margin-right: 10px;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-header {
+  background: #eee;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+@keyframes flashRow {
+  0% {
+    background-color: #fff7e6 !important;
   }
-  
-  #log-search {
-    padding: 10px;
-    margin-right: 10px;
-    width: 100%;
-    font-family: monospace;
+  50% {
+    background-color: #ffeb99 !important;
   }
-  #search-area button,
-  #refresh-export button {
-    padding: 10px;
-    margin-right: 10px;
+  100% {
+    background-color: transparent !important;
   }
-  
-  .log-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .log-header {
-    background: #eee;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-  }
-  
-  .log-entry {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .log-entry:nth-child(even) {
-    background: #f9f9f9;
-  }
-  
-  .toolbar-toggle-button {
-    width: 95px;
-    background-color: rgba(24, 24, 27, 0.9);
-    font-feature-settings: "zero";
-    transition-property: color, background-color, border-color,
-      text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 0.15s;
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-      rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
-    color: rgb(250, 250, 250);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    height: 31.9922px;
-    display: flex;
-    margin: 0px auto;
-    border: 0px solid rgb(228, 228, 231);
-    cursor: pointer;
-    appearance: button;
-    background-image: none;
-    text-transform: none;
-    font-family: __GeistSans_343187, __GeistSans_Fallback_343187, ui-sans-serif,
-      system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue",
-      Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol", "Noto Color Emoji";
-    font-variation-settings: normal;
-    box-sizing: border-box;
-  }
-  
-  .toolbar-toggle-button span {
-    display: block;
-    font-feature-settings: "zero";
-    border: 0px solid rgb(228, 228, 231);
-    box-sizing: border-box;
-  }
+}
+
+.new-log-flash {
+  animation: flash 1s ease-in-out !important;
+}
+
+.log-entry {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  /* transition: background-color 0.3s ease-out; */
+}
+
+/* .log-entry:nth-child(even) {
+  /* background: #f9f9f9; 
+} */
+
+.toolbar-toggle-button {
+  width: 95px;
+  background-color: rgba(24, 24, 27, 0.9);
+  font-feature-settings: "zero";
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.15s;
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
+  color: rgb(250, 250, 250);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  height: 31.9922px;
+  display: flex;
+  margin: 0px auto;
+  border: 0px solid rgb(228, 228, 231);
+  cursor: pointer;
+  appearance: button;
+  background-image: none;
+  text-transform: none;
+  font-family: __GeistSans_343187, __GeistSans_Fallback_343187, ui-sans-serif,
+    system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  font-variation-settings: normal;
+  box-sizing: border-box;
+}
+
+.toolbar-toggle-button span {
+  display: block;
+  font-feature-settings: "zero";
+  border: 0px solid rgb(228, 228, 231);
+  box-sizing: border-box;
+}
