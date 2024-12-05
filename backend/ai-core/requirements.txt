@@ -2,3 +2,4 @@ requests~=2.32.0
 pydantic~=2.9.2
 redis~=5.2
 tenacity~=9.0.0
+clickhouse-driver~=0.2.0

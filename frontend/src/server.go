@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -10,10 +11,19 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
 
 type Template struct {
 	templates *template.Template
@@ -221,6 +231,94 @@ func redirectToIndex(c echo.Context) error {
     return c.File("content/public/index.html")
 }
 
+func streamClassifiedLogs(c echo.Context) error {
+	fmt.Println("WebSocket connection established")
+
+	// Upgrade the HTTP connection to WebSocket
+	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		fmt.Printf("WebSocket upgrade failed: %v\n", err)
+		if websocket.IsUnexpectedCloseError(err) {
+			fmt.Println("Unexpected WebSocket close")
+		}
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to establish WebSocket connection")
+	}
+	defer conn.Close()
+
+	startTime := time.Now().UTC().Add(-15 * time.Second)
+
+	for {
+		query := fmt.Sprintf(`
+			SELECT
+				dt,
+				ai_classified_level,
+				original_message,
+				platform,
+				uuid
+            FROM user_log_data
+            WHERE dt > '%s'
+            AND ai_classified_level IS NOT NULL
+            AND ai_classified_level != ''
+            ORDER BY dt ASC;
+		`, startTime.Format("2006-01-02 15:04:05"))
+
+		rows := make_clickhouse_query(query)
+
+		newStartTime := time.Now().UTC() // Capture the new time before processing rows
+		hasRows := false
+
+		for rows.Next() {
+			var (
+				dt                time.Time
+				aiClassifiedLevel string
+				originalMessage   string
+				platform          string
+				uuid              string
+			)
+
+			hasRows = true
+
+			// Scan the row into variables
+			if err := rows.Scan(&dt, &aiClassifiedLevel, &originalMessage, &platform, &uuid); err != nil {
+				fmt.Printf("Error scanning rows: %v\n", err)
+				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to parse rows: %v", err))
+			}
+
+			formattedDt := dt.Format("2006-01-02 15:04:05")
+
+			// Construct the log data
+			logData := map[string]interface{}{
+				"dt":               formattedDt,
+				"level":            aiClassifiedLevel,
+				"original_message": originalMessage,
+				"platform":         platform,
+			}
+
+			// Convert log data to JSON
+			logJSON, err := json.Marshal(logData)
+			if err != nil {
+				fmt.Printf("Error marshalling log data to JSON: %v\n", err)
+				continue
+			}
+
+			// Send log data via WebSocket
+			if err := conn.WriteMessage(websocket.TextMessage, logJSON); err != nil {
+				fmt.Printf("Failed to send log: %v\n", err)
+				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send log: %v", err))
+			}
+		}
+
+		rows.Close()
+
+		if hasRows {
+			startTime = newStartTime // Only update startTime if we found rows
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	return nil
+}
 
 func main() {
 
@@ -246,6 +344,7 @@ func main() {
 	e.POST("/login", login)
 
 	e.POST("/filterLogs", filterLogs)
+	e.GET("/classifiedLogsWebSocket", streamClassifiedLogs)
 
 	e.Logger.Fatal(e.Start("0.0.0.0:1323"))
 }

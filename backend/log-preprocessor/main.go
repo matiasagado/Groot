@@ -32,7 +32,7 @@ type VectorLog struct {
 	UserDefined     map[string]interface{} `json:"user_defined,omitempty"` // Optional, omitempty makes it optional in the JSON.
 	OriginalMessage string                 `json:"original_message"`       // Represents the original log message.
 	Platform        string                 `json:"platform"`               // Represents the platform, e.g., Nginx.
-	UUID            [16]byte               `json:"uuid"`
+	UUID            string                 `json:"uuid"`
 }
 
 type RetryConfig struct {
@@ -54,33 +54,6 @@ func retryOperation(operation func() error, config RetryConfig) error {
 	b.InitialInterval = config.InitialInterval
 
 	return backoff.Retry(operation, b)
-}
-
-func createClickHouseTable(db *ch.DB) error {
-	ctx := context.Background()
-
-	query := `
-		CREATE TABLE IF NOT EXISTS vector_logs_experiment_2 (
-			dt DateTime,
-			file String,
-			host String,
-			level Nullable(String),
-			user_defined String,
-			original_message String,
-			platform String,
-			uuid UUID
-		)
-		ENGINE = MergeTree()
-		PARTITION BY toYYYYMM(dt)
-		ORDER BY (dt, uuid)
-	`
-
-	_, err := db.ExecContext(ctx, query)
-	if err != nil {
-		return fmt.Errorf("failed to create table: %v", err)
-	}
-
-	return nil
 }
 
 func initializeClickHouse(config *Config) (*ch.DB, error) {
@@ -107,16 +80,6 @@ func initializeClickHouse(config *Config) (*ch.DB, error) {
 				continue
 			}
 			return nil, fmt.Errorf("failed to connect to ClickHouse after %d attempts: %v", maxRetries, err)
-		}
-
-		// Create table if it doesn't exist
-		if err = createClickHouseTable(db); err != nil {
-			log.Printf("Failed to create table (attempt %d/%d): %v", i+1, maxRetries, err)
-			if i < maxRetries-1 {
-				time.Sleep(retryInterval)
-				continue
-			}
-			return nil, fmt.Errorf("failed to create table after %d attempts: %v", maxRetries, err)
 		}
 
 		fmt.Println("Successfully connected to ClickHouse and verified table exists!")
@@ -178,7 +141,7 @@ func initializeServices() error {
 }
 
 type ClickHouseVectorLog struct {
-	ch.CHModel      `ch:"table:vector_logs_experiment_2,partition:toYYYYMM(time)"`
+	ch.CHModel      `ch:"table:user_log_data,partition:toYYYYMM(time)"`
 	Dt              time.Time `ch:",pk"`
 	File            string
 	Host            string
@@ -186,7 +149,7 @@ type ClickHouseVectorLog struct {
 	UserDefined     string
 	OriginalMessage string
 	Platform        string
-	UUID            [16]byte `ch:"type:UUID"`
+	UUID            string
 }
 
 func submit_log_to_clickhouse(ctx context.Context, chLog *ClickHouseVectorLog) error {
@@ -269,11 +232,11 @@ func vectorHttpSink(c echo.Context) error {
 
 	var chLogs []ClickHouseVectorLog
 	for i, log := range vectorLogs {
-		thisUuid, err := uuid.NewUUID()
-		if err != nil {
-			c.Logger().Error("Error generating UUID: ", err)
-			continue
-		}
+		thisUuid := uuid.NewString()
+
+		// Log the generated UUID for each log entry
+		c.Logger().Debugf("Generated UUID for log entry: %s", thisUuid)
+
 		vectorLogs[i].UUID = thisUuid
 		userDefinedStr, err := json.Marshal(log.UserDefined)
 		if err != nil {

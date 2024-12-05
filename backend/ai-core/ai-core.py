@@ -4,10 +4,14 @@ import time
 import re
 import requests
 import logging
+import uuid
+import json
 from typing import Optional, Dict, Any
 from requests.exceptions import RequestException
 from redis.exceptions import RedisError
 from tenacity import retry, stop_after_attempt, wait_exponential
+from clickhouse_driver import Client
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,7 +21,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Configuration with defaults
 REDIS_CONFIG = {
     "host": os.getenv("REDIS_HOST", "localhost"),
     "port": int(os.getenv("REDIS_PORT", "6379")),
@@ -25,14 +28,47 @@ REDIS_CONFIG = {
     "decode_responses": True,
 }
 
-OAI_API_URL = os.getenv('OAI_API_URL')
-OAI_TOKEN = os.getenv('OAI_TOKEN')
-ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format `CLASSIFICATION: INFO` or `CLASSIFICATION: ERROR`.
+CLICKHOUSE_CONFIG = {
+    "host": os.getenv("CLICKHOUSE_HOST", "poc-clickhouse"),
+    "port": int(os.getenv("CLICKHOUSE_PORT", "9000")),
+    "database": os.getenv("CLICKHOUSE_DB", "default"),
+    "user": os.getenv("CLICKHOUSE_USER", "default"),
+    "password": os.getenv("CLICKHOUSE_PASSWORD", "password"),
+}
+
+OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
+OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
+OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
+ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
-```
 {input}
-```
+
 """
+
+def build_response(response):
+    response_text = response.text
+    """ Build a coherent response string from streaming JSON entries. """
+    # Split the response by lines (each line is a separate JSON object)
+    lines = response_text.strip().split("\n")
+
+    # Try parsing each line as a JSON object
+    parsed_json_objects = []
+    for line in lines:
+        try:
+            parsed_json = json.loads(line)
+            parsed_json_objects.append(parsed_json)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error for line: {line}")
+            logger.error(f"Error: {e}")
+
+    # Build the full response from the parsed JSON objects
+    if parsed_json_objects: 
+        full_response = "".join(entry["response"] for entry in parsed_json_objects)
+        logger.info(full_response)
+    else:
+        logger.info("No valid JSON objects were parsed.")
+
+    return full_response
 
 def extract_classification(result_text: str) -> Optional[str]:
     """Extract classification from API response."""
@@ -48,42 +84,78 @@ def extract_classification(result_text: str) -> Optional[str]:
     wait=wait_exponential(multiplier=1, min=4, max=10),
     reraise=True
 )
+
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
-    if not all([OAI_API_URL, OAI_TOKEN]):
-        raise ValueError("Missing required environment variables: OAI_API_URL or OAI_TOKEN")
+    if not all([OLLAMA_API_URL, OLLAMA_TOKEN]):
+        raise ValueError("Missing required environment variables: OLLAMA_API_URL or OLLAMA_TOKEN")
 
     prompt = prompt_template.format(input=log_line)
-    payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OAI_TOKEN}",
-    }
 
     try:
-        start_time = time.time()
-        res = requests.post(OAI_API_URL, json=payload, headers=headers, timeout=10)
-        execution_time = time.time() - start_time
-        
-        res.raise_for_status()
-        prompt_result = res.json()["choices"][0]["message"]["content"]
-        classification = extract_classification(prompt_result)
-        
-        if classification is None:
-            logger.error(f"Classification not found in response: {prompt_result}")
-            return None
+            res = requests.post(
+                OLLAMA_API_URL,
+                json={
+                    "model": OLLAMA_MODEL_NAME,  # Specify the local LLM model name
+                    "prompt": prompt
+                }
+            )
+            res.raise_for_status()
+            
+            # Get response text and build the coherent response from the JSON lines
+            cleaned_response = build_response(res)
 
-        return {
-            "log_line": log_line,
-            "prompt_template": prompt_template,
-            "result": prompt_result,
-            "classification": classification,
-            "execution_time": execution_time,
+            # Extract classification from the coherent response
+            classification = extract_classification(cleaned_response)
+            if classification is None:
+                logger.info(f"Classification not found in response: {cleaned_response}")
+                return None
+
+            return {
+                "log_line": log_line,
+                "classification": classification
         }
 
     except RequestException as e:
         logger.error(f"Request failed: {e}")
         raise  # Let retry handle it
+
+def send_to_clickhouse(classified_log):
+    """Directly update the log entry in ClickHouse with classification result."""
+    # Connect to ClickHouse
+    client = Client(**CLICKHOUSE_CONFIG)
+
+    # extracted log line to get the UUID
+    log_line = classified_log["log_line"]
+
+    try:
+        log = json.loads(log_line)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to decode log_line as JSON: {e}")
+        return
+    
+    uuid_value = log.get("uuid")
+    logger.info(f"UUID type: {type(uuid_value)}, UUID value: {uuid_value}")
+    if uuid_value is None:
+        logger.error("UUID not found in log_line")
+        return
+
+    classification = classified_log["classification"]
+    
+    logger.info(f"Updating ai_classified_level for UUID {uuid_value} to {classification}")
+
+    query = """
+    ALTER TABLE user_log_data
+    UPDATE ai_classified_level = '{classification}'
+    WHERE uuid = '{uuid_value}'
+    """
+    query = query.format(classification=classification, uuid_value=uuid_value)
+
+    try:
+        client.execute(query)
+        logger.info(f"Successfully updated log for UUID {uuid_value} in ClickHouse.")
+    except Exception as e:
+        logger.error(f"Failed to update ClickHouse for UUID {uuid_value}: {e}")
 
 class RedisQueue:
     """Redis queue handler with connection management."""
@@ -146,6 +218,8 @@ def main():
                 
                 if result:
                     logger.info(f'{result["classification"]}: {result["log_line"]}')
+                    
+                    send_to_clickhouse(result)  # Send as a list of logs
                 else:
                     logger.warning(f"Failed to classify item: {item}")
                 
