@@ -57,13 +57,14 @@
       </table>
     </div>
   </div>
-  
+
 
   <!-- WebSocket Script -->
   <script>
     // WebSocket connection
     console.log("Attempting to connect to WebSocket...");
-    const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
+	const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+	const ws = new WebSocket(wsProtocol + '//' + window.location.host + '/classifiedLogsWebSocket');
     const logsContainer = document.querySelector('.table-responsive tbody'); // Update to target the table body
 
     // On WebSocket connection open
