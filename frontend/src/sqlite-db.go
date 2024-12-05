@@ -1,17 +1,37 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
+	_ "modernc.org/sqlite"
 )
 
 var db *sql.DB 
 
+
 func initDB() {
-    var err error
+	goose_db, err := goose.OpenDBWithDriver("sqlite", "./users.db")
+	ctx := context.Background()
+	if err != nil {
+		log.Fatalf("goose: failed to open DB: %v\n", err)
+	}
+
+	defer func() {
+		if err := goose_db.Close(); err != nil {
+			log.Fatalf("goose: failed to close DB: %v\n", err)
+		}
+	}()
+	
+	var command = "up"
+	if err := goose.RunContext(ctx, command, goose_db, "./migrations"); err != nil {
+		log.Fatalf("goose %v: %v", command, err)
+	}
+
     db, err = sql.Open("sqlite3", "./users.db")
     if err != nil {
         log.Fatalf("Error opening database: %v", err)
@@ -19,20 +39,6 @@ func initDB() {
     if db == nil {
         log.Fatalf("Database connection is nil!")
     }
-    log.Println("Database opened successfully.")
-
-    createTable := `
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
-    );`
-    _, err = db.Exec(createTable)
-    if err != nil {
-        log.Fatalf("Error creating table: %v", err)
-    }
-    log.Println("Database initialized successfully.")
 }
 
 func RegisterUser(username string, email string, password string) error {
