@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
-	"strconv"
 	"time"
+	"encoding/json"
+	"log"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true
+    },
 }
 
 type Template struct {
@@ -84,69 +84,89 @@ func filterLogs(c echo.Context) error {
 }
 
 func streamClassifiedLogs(c echo.Context) error {
-	fmt.Println("WebSocket connection established")
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	if err != nil {
-		fmt.Printf("WebSocket upgrade failed: %v\n", err)
-		if websocket.IsUnexpectedCloseError(err) {
-			fmt.Println("Unexpected WebSocket close")
+    fmt.Println("WebSocket connection established")
+
+    // Upgrade the HTTP connection to WebSocket
+    conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+    if err != nil {
+        fmt.Printf("WebSocket upgrade failed: %v\n", err)
+        if websocket.IsUnexpectedCloseError(err) {
+            fmt.Println("Unexpected WebSocket close")
+        }
+        return echo.NewHTTPError(http.StatusBadRequest, "Failed to establish WebSocket connection")
+    }
+    defer conn.Close()
+
+    // Query the database and stream logs
+    query := `
+        SELECT 
+            dt, 
+            ai_classified_level, 
+            original_message, 
+            platform, 
+            uuid
+        FROM user_log_data
+        WHERE ai_classified_level IS NOT NULL
+        ORDER BY dt ASC;
+    `
+    rows := make_clickhouse_query(query)
+    defer rows.Close()
+
+    sentUUIDs := make(map[string]bool) // Track UUIDs to avoid duplicate logs
+
+    for rows.Next() {
+		var (
+			dt               time.Time
+			aiClassifiedLevel string
+			originalMessage  string
+			platform         string
+			uuid             string
+		)
+	
+		// Scan the row into variables
+		if err := rows.Scan(&dt, &aiClassifiedLevel, &originalMessage, &platform, &uuid); err != nil {
+			fmt.Printf("Error scanning rows: %v\n", err)
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to parse rows: %v", err))
 		}
-		return echo.NewHTTPError(http.StatusBadRequest, "Failed to establish WebSocket connection")
+
+		// Skip duplicate UUIDs
+		if sentUUIDs[uuid] {
+			continue
+		}
+		sentUUIDs[uuid] = true
+
+		currentTime := time.Now().Format("2006-01-02 15:04:05")
+
+		// Construct the log data
+		logData := map[string]interface{}{
+			"dt":               currentTime,
+			"level":            aiClassifiedLevel,
+			"original_message": originalMessage,
+			"platform":         platform,
+		}
+	
+		// Convert log data to JSON
+		logJSON, err := json.Marshal(logData)
+		if err != nil {
+			fmt.Printf("Error marshalling log data to JSON: %v\n", err)
+			continue
+		}
+	
+		// Send log data via WebSocket
+		if err := conn.WriteMessage(websocket.TextMessage, logJSON); err != nil {
+			fmt.Printf("Failed to send log: %v\n", err)
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send log: %v", err))
+		}
+	
+		time.Sleep(1 * time.Second) // Simulate delay for real-time streaming
 	}
-	defer conn.Close()
+	
+	
 
-	fmt.Println("Querying logs...")
-	startTime := time.Now().UTC().Add(-15 * time.Second)
-
-	for {
-		query := fmt.Sprintf(`
-            SELECT dt, original_message, ai_classified_level
-            FROM user_log_data
-            WHERE dt > '%s'
-            AND ai_classified_level IS NOT NULL
-            AND ai_classified_level != ''
-            ORDER BY dt ASC;
-        `, startTime.Format("2006-01-02 15:04:05"))
-
-		fmt.Printf("Query: %s\n", query)
-		rows := make_clickhouse_query(query)
-
-		newStartTime := time.Now().UTC() // Capture the new time before processing rows
-		hasRows := false
-
-		for rows.Next() {
-			hasRows = true
-			var dt time.Time
-			var originalMessage, aiClassifiedLevel string
-
-			if err := rows.Scan(&dt, &originalMessage, &aiClassifiedLevel); err != nil {
-				rows.Close()
-				fmt.Printf("Error scanning rows: %v\n", err)
-				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to parse rows: %v", err))
-			}
-
-			formattedDt := dt.Format("2006-01-02 15:04:05")
-			logData := fmt.Sprintf(
-				"{\"dt\": \"%s\", \"original_message\": %s, \"ai_classified_level\": \"%s\"}",
-				formattedDt, strconv.Quote(originalMessage), aiClassifiedLevel,
-			)
-
-			if err := conn.WriteMessage(websocket.TextMessage, []byte(logData)); err != nil {
-				rows.Close()
-				fmt.Printf("Failed to send log: %v\n", err)
-				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send log: %v", err))
-			}
-		}
-
-		rows.Close() // Close the rows before starting next iteration
-
-		if hasRows {
-			startTime = newStartTime // Only update startTime if we found rows
-		}
-
-		time.Sleep(1 * time.Second)
-	}
+    fmt.Println("Finished streaming logs")
+    return nil
 }
+
 
 func main() {
 	e := echo.New()

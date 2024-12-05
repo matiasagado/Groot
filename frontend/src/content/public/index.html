@@ -12,56 +12,44 @@
 </head>
 
 <body>
-  <!-- Header with aligned buttons -->
-  <div class="header">
-    <div class="left-group">
-      <button id="live-btn" class="header-btn btn btn-secondary">Live</button>
-      <button id="refresh-btn" class="header-btn btn btn-secondary">Refresh</button>
-    </div>
-    <div class="center-group">
-      <div class="dropdown">
-        <button id="sort-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Sort</button>
-        <ul class="dropdown-menu">
-          <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "timestamp"}'
-              hx-target="#log-table-results" hx-swap="innerHTML">Timestamp</button>
-          </li>
-          <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "severity"}'
-              hx-target="#log-table-results" hx-swap="innerHTML">Severity</button>
-          </li>
-          <li>
-            <button class="dropdown-item" hx-post="/sort" hx-vals='{"sort": "source"}'
-              hx-target="#log-table-results" hx-swap="innerHTML">Source</button>
-          </li>
-        </ul>
-      </div>
-      <div class="dropdown">
-        <button id="filter-btn" class="header-btn btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
-        <div class="dropdown-menu">
-          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control"
-            hx-post="/applyFilter" hx-trigger="change" hx-target="#log-table-results" hx-swap="innerHTML" />
-        </div>
-      </div>
-      <button id="clear-filters-btn" class="header-btn btn btn-secondary" hx-get="/clearFilters"
-        hx-trigger="click" hx-target="#log-table-results" hx-swap="innerHTML">Clear Filter</button>
-    </div>
-    <div class="right-group">
-      <button id="logout-btn" class="header-btn btn btn-danger">Logout</button>
-    </div>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <span class="top-bar-title">Logparse AI</span>
+    <button class="logout-btn">Logout</button>
   </div>
 
   <!-- Logs Container -->
   <div class="logs-container">
-    <h1 class="mt-3">Logs</h1>
+    <h1 class="mt-3">System Logs</h1>
+    <div class="controls">
+      <button id="live-btn">Live</button>
+      <button id="refresh-btn">Refresh</button>
+      <div class="dropdown">
+        <button id="sort-btn" class="dropdown-toggle" data-bs-toggle="dropdown">Sort</button>
+        <ul class="dropdown-menu">
+          <li><button class="dropdown-item">Timestamp</button></li>
+          <li><button class="dropdown-item">Severity</button></li>
+          <li><button class="dropdown-item">Source</button></li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button id="filter-btn" class="dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
+        <div class="dropdown-menu">
+          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control" />
+        </div>
+      </div>
+      <button id="clear-filters-btn">Clear Filter</button>
+    </div>
     <div class="table-responsive">
       <table class="table">
         <thead class="table-light">
           <tr>
-            <th>Timestamp</th>
-            <th>Level</th>
-            <th>Source</th>
-            <th>Message</th>
+            <tr>
+              <th>Timestamp</th>
+              <th>Level</th>
+              <th>Platform</th>
+              <th>Original Message</th>
+            </tr>
           </tr>
         </thead>
         <tbody id="log-table-results">
@@ -69,49 +57,62 @@
       </table>
     </div>
   </div>
+  
 
   <!-- WebSocket Script -->
   <script>
-  const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
-  const logsContainer = document.querySelector('.table-responsive');
+    // WebSocket connection
+    console.log("Attempting to connect to WebSocket...");
+    const ws = new WebSocket('ws://' + window.location.host + '/classifiedLogsWebSocket');
+    const logsContainer = document.querySelector('.table-responsive tbody'); // Update to target the table body
 
-  ws.onmessage = function(event) {
-    const log = JSON.parse(event.data);
-    const logRow = document.createElement('div');
-    logRow.className = 'log-entry new-log-flash';
+    // On WebSocket connection open
+    ws.onopen = function () {
+      console.log('WebSocket connection established');
+    };
 
-    logRow.innerHTML = `
-      <span>${log.dt}</span>
-      <span>${log.ai_classified_level}</span>
-      <span>System</span>
-      <span>${log.original_message}</span>
-    `;
+      // On receiving a message
+    ws.onmessage = function (event) {
+      console.log('Received log from WebSocket:', event.data);
+      const log = JSON.parse(event.data);
 
-    logsContainer.appendChild(logRow);
+      // Create a new row for the log
+      const logRow = document.createElement('tr');
+      logRow.className = 'new-log-flash'; // Add animation class
 
-    // Remove the animation class after it completes to allow future animations
-    setTimeout(() => {
-      logRow.classList.remove('new-log-flash');
-    }, 1000);
+      logRow.innerHTML = `
+        <td>${log.dt}</td>
+        <td>${log.level}</td>
+        <td>${log.platform}</td>
+        <td>${log.original_message}</td>
+      `;
 
-    // Optional: Limit the number of visible logs and remove older ones
-    const maxLogs = 10000;
-    const logs = document.querySelectorAll('.log-entry');
-    if (logs.length > maxLogs) {
-      logs[0].remove();
-    }
+      // Insert the new row at the top of the logs table
+      logsContainer.insertAdjacentElement('afterbegin', logRow);
 
-    // Auto-scroll to bottom
-    logsContainer.scrollTop = logsContainer.scrollHeight;
-  };
+      // Remove the animation class after it completes to allow future animations
+      setTimeout(() => {
+        logRow.classList.remove('new-log-flash');
+      }, 1000);
 
-  ws.onerror = function(event) {
-    console.error('WebSocket error:', event);
-  };
+      // Optional: Limit the number of visible logs and remove older ones
+      const maxLogs = 10000; // Adjust as needed
+      const logRows = logsContainer.querySelectorAll('tr');
+      if (logRows.length > maxLogs) {
+        logRows[logRows.length - 1].remove(); // Remove the oldest log
+      }
+    };
 
-  ws.onclose = function(event) {
-    console.log('WebSocket connection closed:', event);
-  };
+    // On WebSocket error
+    ws.onerror = function (error) {
+      console.error('WebSocket error:', error);
+    };
+
+    // On WebSocket close
+    ws.onclose = function () {
+      console.log('WebSocket connection closed');
+    };
+
   </script>
 
 </body>
