@@ -18,6 +18,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// WebSocket upgrader configuration for handling WebSocket connections
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -30,6 +31,7 @@ type Template struct {
 	templates *template.Template
 }
 
+// Render method for executing the template with data
 func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
@@ -45,6 +47,7 @@ type Log struct {
 	UUID            [16]byte
 }
 
+// validatePassword checks if a given password meets the required criteria
 func validatePassword(password string) []string {
 	var errors []string
 
@@ -76,6 +79,7 @@ type User struct {
 	Password string
 }
 
+// findUserByEmail fetches a user from the database by their email
 func findUserByEmail(email string) (*User, error) {
 	var user User
 	query := "SELECT email, password FROM users WHERE email = ?"
@@ -100,6 +104,7 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+// login handles user login by checking credentials and validating the password
 func login(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -143,6 +148,7 @@ func login(c echo.Context) error {
 	return c.NoContent(http.StatusSeeOther)
 }
 
+// register handles user registration by validating the input and saving the new user to the database
 func register(c echo.Context) error {
 
 	username := c.FormValue("username")
@@ -194,6 +200,7 @@ func register(c echo.Context) error {
 	return c.NoContent(http.StatusSeeOther)
 }
 
+// filterLogs handles filtering logs based on a given SQL filter and renders the results
 func filterLogs(c echo.Context) error {
 	filter := c.FormValue("sql-filter")
 	println("SQL filter:", filter)
@@ -231,6 +238,7 @@ func redirectToIndex(c echo.Context) error {
 	return c.File("content/public/index.html")
 }
 
+// streamClassifiedLogs streams classified log data via WebSocket in real-time
 func streamClassifiedLogs(c echo.Context) error {
 	fmt.Println("WebSocket connection established")
 

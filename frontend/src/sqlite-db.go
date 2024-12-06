@@ -13,7 +13,7 @@ import (
 
 var db *sql.DB 
 
-
+// initDB initializes the database, runs any pending migrations, and opens a connection to the database.
 func initDB() {
 	goose_db, err := goose.OpenDBWithDriver("sqlite", "./users.db")
 	ctx := context.Background()
@@ -41,6 +41,8 @@ func initDB() {
     }
 }
 
+// RegisterUser registers a new user by inserting their username, email, and password into the database.
+// It returns an error if the user cannot be registered.
 func RegisterUser(username string, email string, password string) error {
 	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
 	_, err := db.Exec(query, username, email, password)
@@ -50,6 +52,8 @@ func RegisterUser(username string, email string, password string) error {
 	return nil
 }
 
+// AuthenticateUser checks if the provided email and password match a user in the database.
+// It returns true if the user is found and authenticated successfully, otherwise false along with an error.
 func AuthenticateUser(email, password string) (bool, error) {
 	query := "SELECT id FROM users WHERE email = ? AND password = ?"
 	row := db.QueryRow(query, email, password)
