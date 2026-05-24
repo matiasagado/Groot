@@ -109,7 +109,11 @@
 
 					<div class="filter-group">
 						<span class="filter-label">Severity</span>
-						<div class="chip-row" role="group">
+						<div
+							class="chip-row"
+							id="severity-chips"
+							role="group"
+						>
 							<button
 								class="chip is-active"
 								type="button"
@@ -188,6 +192,30 @@
 						</tbody>
 					</table>
 				</section>
+
+				<nav class="pagination" aria-label="Log pagination">
+					<span class="pagination-range" id="page-range">0 of 0</span>
+					<div class="pagination-controls">
+						<button
+							class="page-btn"
+							id="page-prev"
+							type="button"
+							aria-label="Previous page"
+							disabled
+						>
+							‹
+						</button>
+						<button
+							class="page-btn"
+							id="page-next"
+							type="button"
+							aria-label="Next page"
+							disabled
+						>
+							›
+						</button>
+					</div>
+				</nav>
 			</main>
 		</div>
 

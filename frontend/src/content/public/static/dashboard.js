@@ -1,17 +1,50 @@
-// Dashboard live-log feed.
-// WebSocket payload shape: { dt, level, original_message, platform }.
-// Project chips / severity chips / search input are scaffolded — they look
-// real and respond to clicks, but don't filter until the backend supports
-// project-labeled data and a filter endpoint.
+// Dashboard state + render loop.
+// WebSocket payload shape:
+//   { dt, level, ai_classified, original_message, platform, uuid }
+//
+// Architecture: incoming rows go into a master list (newest-first). The
+// visible table is a filtered, paginated view of that list. Filters and
+// pagination only re-render the view; the source data stays intact.
 
-const MAX_VISIBLE_ROWS = 5000;
-const logRowsEl = document.getElementById("log-rows");
-const liveIndicator = document.getElementById("live-indicator");
+const PAGE_SIZE = 25;
+
+let allRows = []; // newest first
+let currentPage = 1;
+let projectFilter = "all";
+let severityFilter = "all";
+let demoMode = false;
+let projects = [];
 
 let liveOn = true;
 let totalSeen = 0;
 let errorsSeen = 0;
 let aiClassifiedSeen = 0;
+
+const logRowsEl = document.getElementById("log-rows");
+const liveIndicator = document.getElementById("live-indicator");
+const pageRangeEl = document.getElementById("page-range");
+const prevBtn = document.getElementById("page-prev");
+const nextBtn = document.getElementById("page-next");
+const projectChipsEl = document.getElementById("project-chips");
+const severityChipsEl = document.getElementById("severity-chips");
+
+// ---------- Helpers ----------
+
+function escapeHTML(s) {
+	if (s == null) return "";
+	return String(s)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+function formatTime(dt) {
+	if (!dt) return "—";
+	const parts = dt.split(" ");
+	return parts.length === 2 ? parts[1] : dt;
+}
 
 function levelClass(level) {
 	const l = (level || "").toUpperCase();
@@ -23,8 +56,7 @@ function levelClass(level) {
 
 // Demo-mode classifier: when the real AI hasn't tagged a row, infer a
 // plausible severity from message content so recruiters see a populated
-// AI column instead of an empty one. Real users without Ollama wired up
-// will still see "—" — only demo sessions get the synthetic enrichment.
+// AI column instead of an empty one.
 function inferLevel(message) {
 	if (!message) return "INFO";
 	const statusMatch = message.match(/"\s+(\d{3})\s+/);
@@ -49,31 +81,9 @@ function resolveLevel(log) {
 
 function isAIClassified(log) {
 	if (log.ai_classified) return true;
-	if (demoMode) return true; // demo heuristic acts as the AI proxy
+	if (demoMode) return true;
 	return false;
 }
-
-function escapeHTML(s) {
-	if (s == null) return "";
-	return String(s)
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
-}
-
-function formatTime(dt) {
-	if (!dt) return "—";
-	// "2026-05-23 14:23:01" → "14:23:01" with date subtle on hover
-	const parts = dt.split(" ");
-	return parts.length === 2 ? parts[1] : dt;
-}
-
-// Demo mode + projects come from /api/me; defaults are safe for the
-// pre-fetch render path.
-let demoMode = false;
-let projects = [];
 
 function hashKey(s) {
 	let h = 0;
@@ -85,19 +95,16 @@ function hashKey(s) {
 }
 
 function projectForLog(log) {
-	// In demo mode, deterministically assign each row to one of the mock
-	// projects so the chips/rows look like they came from a real fleet.
 	if (demoMode && projects.length > 0) {
-		const key = log.original_message || log.dt || "";
+		const key = log.uuid || log.original_message || log.dt || "";
 		return projects[hashKey(key) % projects.length];
 	}
 	return log.platform || "—";
 }
 
 function renderProjectChips(list) {
-	const row = document.getElementById("project-chips");
-	if (!row) return;
-	row.querySelectorAll(".chip").forEach((c) => {
+	if (!projectChipsEl) return;
+	projectChipsEl.querySelectorAll(".chip").forEach((c) => {
 		if (c.dataset.project !== "all") c.remove();
 	});
 	list.forEach((name) => {
@@ -106,39 +113,40 @@ function renderProjectChips(list) {
 		btn.className = "chip";
 		btn.dataset.project = name;
 		btn.textContent = name;
-		row.appendChild(btn);
+		projectChipsEl.appendChild(btn);
 	});
 }
 
-function setStat(id, value) {
-	const el = document.getElementById(id);
-	if (el) el.textContent = value;
+// ---------- Filters + pagination ----------
+
+function levelMatchesFilter(level, filter) {
+	const l = level.toUpperCase();
+	if (filter === "all") return true;
+	if (filter === "info") return l === "INFO";
+	if (filter === "warn") return l === "WARN" || l === "WARNING";
+	if (filter === "error")
+		return l === "ERROR" || l === "ERR" || l === "CRIT" || l === "FATAL";
+	return true;
 }
 
-function updateStats() {
-	setStat("stat-total", totalSeen.toLocaleString());
-	setStat("stat-errors", errorsSeen.toLocaleString());
-	setStat("stat-recent", "—"); // needs server-side aggregation
-	const pct =
-		totalSeen > 0
-			? Math.round((aiClassifiedSeen / totalSeen) * 100) + "%"
-			: "—";
-	setStat("stat-ai", pct);
+function applyFilters(rows) {
+	return rows.filter((log) => {
+		if (projectFilter !== "all" && projectForLog(log) !== projectFilter)
+			return false;
+		if (!levelMatchesFilter(resolveLevel(log), severityFilter)) return false;
+		return true;
+	});
 }
 
-function clearEmptyRow() {
-	const empty = logRowsEl.querySelector(".log-row-empty");
-	if (empty) empty.remove();
-}
-
-function appendLogRow(log) {
-	clearEmptyRow();
-
+function buildRow(log) {
 	const level = resolveLevel(log).toUpperCase();
 	const aiClassified = isAIClassified(log);
-
 	const row = document.createElement("tr");
-	row.className = "new-log-flash";
+	if (log._isNew) {
+		row.className = "new-log-flash";
+		log._isNew = false;
+		setTimeout(() => row.classList.remove("new-log-flash"), 1200);
+	}
 	row.innerHTML = `
 		<td class="col-time" title="${escapeHTML(log.dt)}">${escapeHTML(
 		formatTime(log.dt),
@@ -162,16 +170,52 @@ function appendLogRow(log) {
 		</td>
 		<td class="col-msg">${escapeHTML(log.original_message)}</td>
 	`;
-	logRowsEl.insertAdjacentElement("afterbegin", row);
-	setTimeout(() => row.classList.remove("new-log-flash"), 1200);
+	return row;
+}
 
-	totalSeen++;
-	if (level === "ERROR" || level === "CRIT") errorsSeen++;
-	if (aiClassified) aiClassifiedSeen++;
-	updateStats();
+function render() {
+	const filtered = applyFilters(allRows);
+	const total = filtered.length;
+	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+	if (currentPage > totalPages) currentPage = totalPages;
+	const start = (currentPage - 1) * PAGE_SIZE;
+	const end = Math.min(start + PAGE_SIZE, total);
+	const visible = filtered.slice(start, end);
 
-	const rows = logRowsEl.querySelectorAll("tr");
-	if (rows.length > MAX_VISIBLE_ROWS) rows[rows.length - 1].remove();
+	logRowsEl.innerHTML = "";
+	if (total === 0) {
+		const empty = document.createElement("tr");
+		empty.className = "log-row-empty";
+		empty.innerHTML = `<td colspan="5">${
+			allRows.length === 0
+				? "Waiting for logs from the pipeline…"
+				: "No logs match the current filters."
+		}</td>`;
+		logRowsEl.appendChild(empty);
+	} else {
+		visible.forEach((log) => logRowsEl.appendChild(buildRow(log)));
+	}
+
+	pageRangeEl.textContent =
+		total === 0 ? "0 of 0" : `${start + 1}–${end} of ${total}`;
+	prevBtn.disabled = currentPage <= 1;
+	nextBtn.disabled = currentPage >= totalPages;
+}
+
+function setStat(id, value) {
+	const el = document.getElementById(id);
+	if (el) el.textContent = value;
+}
+
+function updateStats() {
+	setStat("stat-total", totalSeen.toLocaleString());
+	setStat("stat-errors", errorsSeen.toLocaleString());
+	setStat("stat-recent", "—");
+	const pct =
+		totalSeen > 0
+			? Math.round((aiClassifiedSeen / totalSeen) * 100) + "%"
+			: "—";
+	setStat("stat-ai", pct);
 }
 
 // ---------- WebSocket feed ----------
@@ -185,7 +229,26 @@ function connectWebSocket() {
 	ws.onmessage = (event) => {
 		if (!liveOn) return;
 		try {
-			appendLogRow(JSON.parse(event.data));
+			const log = JSON.parse(event.data);
+			log._isNew = true;
+			allRows.unshift(log);
+			totalSeen++;
+			const lvl = resolveLevel(log).toUpperCase();
+			if (lvl === "ERROR" || lvl === "CRIT" || lvl === "FATAL") errorsSeen++;
+			if (isAIClassified(log)) aiClassifiedSeen++;
+			updateStats();
+			if (currentPage === 1) {
+				render();
+			} else {
+				// keep pagination counts fresh without forcing a full table redraw
+				const total = applyFilters(allRows).length;
+				const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+				pageRangeEl.textContent = `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(
+					currentPage * PAGE_SIZE,
+					total,
+				)} of ${total}`;
+				nextBtn.disabled = currentPage >= totalPages;
+			}
 		} catch (e) {
 			console.error("Failed to parse log payload:", e);
 		}
@@ -210,16 +273,48 @@ if (liveIndicator) {
 	});
 }
 
-// ---------- Chip toggles (visual only) ----------
+// ---------- Chip handlers ----------
 
-document.querySelectorAll(".chip-row").forEach((row) => {
-	row.addEventListener("click", (e) => {
+function setActiveChip(rowEl, chip) {
+	rowEl.querySelectorAll(".chip").forEach((c) =>
+		c.classList.toggle("is-active", c === chip),
+	);
+}
+
+if (projectChipsEl) {
+	projectChipsEl.addEventListener("click", (e) => {
 		const chip = e.target.closest(".chip");
 		if (!chip) return;
-		row.querySelectorAll(".chip").forEach((c) =>
-			c.classList.toggle("is-active", c === chip),
-		);
+		projectFilter = chip.dataset.project;
+		setActiveChip(projectChipsEl, chip);
+		currentPage = 1;
+		render();
 	});
+}
+
+if (severityChipsEl) {
+	severityChipsEl.addEventListener("click", (e) => {
+		const chip = e.target.closest(".chip");
+		if (!chip) return;
+		severityFilter = chip.dataset.level;
+		setActiveChip(severityChipsEl, chip);
+		currentPage = 1;
+		render();
+	});
+}
+
+// ---------- Pagination ----------
+
+prevBtn.addEventListener("click", () => {
+	if (currentPage > 1) {
+		currentPage--;
+		render();
+	}
+});
+
+nextBtn.addEventListener("click", () => {
+	currentPage++;
+	render();
 });
 
 // ---------- Search ⌘K focus ----------
@@ -231,8 +326,8 @@ document.addEventListener("keydown", (e) => {
 	}
 });
 
-// Ask the server whether this session is in demo mode, what projects to
-// show, and surface the banner / chips accordingly.
+// ---------- Init ----------
+
 fetch("/api/me")
 	.then((r) => r.json())
 	.then((me) => {
@@ -244,8 +339,9 @@ fetch("/api/me")
 			if (banner) banner.hidden = false;
 		}
 		renderProjectChips(projects);
+		render();
 	})
-	.catch(() => {});
+	.catch(() => render());
 
-connectWebSocket();
 updateStats();
+connectWebSocket();

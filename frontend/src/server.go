@@ -345,8 +345,11 @@ func streamClassifiedLogs(c echo.Context) error {
 
 	// Start at the zero time so the first poll backfills whatever's already
 	// in ClickHouse. After that, startTime advances to the wall clock and
-	// the loop only picks up new ingest.
+	// the loop only picks up new ingest. The first iteration also paces
+	// row writes so the backfill streams in like a live tail instead of
+	// dumping all at once.
 	startTime := time.Time{}
+	firstIteration := true
 
 	for {
 		query := fmt.Sprintf(`
@@ -412,9 +415,14 @@ func streamClassifiedLogs(c echo.Context) error {
 				fmt.Printf("Failed to send log: %v\n", err)
 				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send log: %v", err))
 			}
+
+			if firstIteration {
+				time.Sleep(80 * time.Millisecond)
+			}
 		}
 
 		rows.Close()
+		firstIteration = false
 
 		if hasRows {
 			startTime = newStartTime // Only update startTime if we found rows
