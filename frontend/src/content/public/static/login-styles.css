@@ -234,3 +234,19 @@ header {
 .login-register p a:hover {
   text-decoration: underline;
 }
+
+.error-message {
+  color: #c1121f;
+  font-size: 0.85em;
+  margin: 8px 0 0;
+}
+
+.error-message .error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-message .error-list li {
+  padding: 2px 0;
+}
