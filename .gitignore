@@ -61,6 +61,10 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# SQLite stores for the Groot frontend (live DB lives on a Docker volume).
+frontend/src/users.db
+frontend/src/data/
+
 # Flask stuff:
 instance/
 .webassets-cache

@@ -22,13 +22,18 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    linear-gradient(rgba(10, 9, 7, 0.82), rgba(10, 9, 7, 0.88)),
+    url("/static/groot2.jpg") center/cover no-repeat fixed;
 }
 
 .auth-shell {
