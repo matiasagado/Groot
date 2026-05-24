@@ -10,9 +10,8 @@ services:
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
       - CLICKHOUSE_HOST=localhost
-      - OLLAMA_TOKEN=aa
-      - OLLAMA_API_URL=http://erikp-desktop-nix.internal-headscale.ucaia.com:11434/api/generate
-      - OLLAMA_MODEL_NAME=deepseek-coder-v2
+      - OLLAMA_API_URL=${OLLAMA_API_URL:?OLLAMA_API_URL must be set in .env}
+      - OLLAMA_MODEL_NAME=${OLLAMA_MODEL_NAME:-qwen2.5-coder:7b}
     network_mode: host
 
   log-preprocessor:
