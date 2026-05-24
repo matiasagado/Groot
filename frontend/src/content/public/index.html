@@ -142,6 +142,13 @@
 							>
 								Error
 							</button>
+							<button
+								class="chip"
+								type="button"
+								data-level="critical"
+							>
+								Critical
+							</button>
 						</div>
 					</div>
 				</section>
@@ -181,11 +188,12 @@
 								<th class="col-level">Level</th>
 								<th class="col-ai">AI</th>
 								<th class="col-msg">Message</th>
+								<th class="col-toggle" aria-label="Toggle view"></th>
 							</tr>
 						</thead>
 						<tbody id="log-rows">
 							<tr class="log-row-empty">
-								<td colspan="5">
+								<td colspan="6">
 									Waiting for logs from the pipeline…
 								</td>
 							</tr>
