@@ -81,6 +81,8 @@ services:
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASS=password
       - CLICKHOUSE_DB=default
+    volumes:
+      - frontend-data:/app/data
     depends_on:
       - clickhouse
 
@@ -109,3 +111,6 @@ services:
       - ./backend/goose/migrations:/migrations
     entrypoint: ["goose", "-dir", "/migrations", "up"]
     restart: no
+
+volumes:
+  frontend-data:

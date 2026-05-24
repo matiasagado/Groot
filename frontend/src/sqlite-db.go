@@ -5,17 +5,26 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )
 
-var db *sql.DB 
+var db *sql.DB
+
+// usersDBPath is the on-disk location of the SQLite users database.
+// Lives under ./data so a Docker volume can persist it across rebuilds.
+const usersDBPath = "./data/users.db"
 
 // initDB initializes the database, runs any pending migrations, and opens a connection to the database.
 func initDB() {
-	goose_db, err := goose.OpenDBWithDriver("sqlite", "./users.db")
+	if err := os.MkdirAll("./data", 0755); err != nil {
+		log.Fatalf("failed to create data dir: %v\n", err)
+	}
+
+	goose_db, err := goose.OpenDBWithDriver("sqlite", usersDBPath)
 	ctx := context.Background()
 	if err != nil {
 		log.Fatalf("goose: failed to open DB: %v\n", err)
@@ -26,19 +35,19 @@ func initDB() {
 			log.Fatalf("goose: failed to close DB: %v\n", err)
 		}
 	}()
-	
+
 	var command = "up"
 	if err := goose.RunContext(ctx, command, goose_db, "./migrations"); err != nil {
 		log.Fatalf("goose %v: %v", command, err)
 	}
 
-    db, err = sql.Open("sqlite3", "./users.db")
-    if err != nil {
-        log.Fatalf("Error opening database: %v", err)
-    }
-    if db == nil {
-        log.Fatalf("Database connection is nil!")
-    }
+	db, err = sql.Open("sqlite3", usersDBPath)
+	if err != nil {
+		log.Fatalf("Error opening database: %v", err)
+	}
+	if db == nil {
+		log.Fatalf("Database connection is nil!")
+	}
 }
 
 // RegisterUser registers a new user by inserting their username, email, and password into the database.
