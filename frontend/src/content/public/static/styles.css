@@ -494,6 +494,63 @@ body {
   border-color: var(--border);
 }
 
+/* ---------- Demo banner ---------- */
+
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(127, 181, 116, 0.08);
+  border: 1px solid var(--moss);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.demo-banner[hidden] {
+  display: none;
+}
+
+.demo-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--moss);
+  flex-shrink: 0;
+}
+
+.demo-banner-text {
+  color: var(--text-muted);
+}
+
+.demo-banner-form {
+  margin-left: auto;
+}
+
+.demo-banner-exit {
+  background: transparent;
+  border: 1px solid var(--moss);
+  color: var(--moss-strong);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.demo-banner-exit:hover {
+  background: var(--moss-dim);
+}
+
+/* In demo mode, hide the sidebar logout (the banner Exit replaces it). */
+body.is-demo .sidebar-logout-form {
+  display: none;
+}
+
 /* ---------- New row flash ---------- */
 
 .new-log-flash {

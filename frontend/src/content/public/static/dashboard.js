@@ -164,5 +164,17 @@ document.addEventListener("keydown", (e) => {
 	}
 });
 
+// Ask the server whether this session is in demo mode and surface a banner.
+fetch("/api/me")
+	.then((r) => r.json())
+	.then((me) => {
+		if (me.demo) {
+			document.body.classList.add("is-demo");
+			const banner = document.getElementById("demo-banner");
+			if (banner) banner.hidden = false;
+		}
+	})
+	.catch(() => {});
+
 connectWebSocket();
 updateStats();

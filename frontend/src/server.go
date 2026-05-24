@@ -26,14 +26,20 @@ import (
 // sessionName is the cookie key used to track logged-in users.
 const sessionName = "groot"
 
-// requireAuth gates a route on the presence of a valid session.
-// For WebSocket upgrades and htmx requests it returns 401 so the client
-// can surface an error instead of being told to follow a 303 to HTML.
+// requireAuth gates a route on the presence of a valid session — either a
+// real signed-in user (email set) or a demo session (demo flag set). For
+// WebSocket upgrades and htmx requests it returns 401 so the client can
+// surface an error instead of being told to follow a 303 to HTML.
 func requireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		sess, err := session.Get(sessionName, c)
-		if err == nil && sess.Values["email"] != nil {
-			return next(c)
+		if err == nil {
+			if _, ok := sess.Values["email"].(string); ok {
+				return next(c)
+			}
+			if v, ok := sess.Values["demo"].(bool); ok && v {
+				return next(c)
+			}
 		}
 		if c.Request().Header.Get("Upgrade") == "websocket" ||
 			c.Request().Header.Get("HX-Request") == "true" {
@@ -41,6 +47,36 @@ func requireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return c.Redirect(http.StatusSeeOther, "/login-page.html")
 	}
+}
+
+// enterDemo opens a public read-only demo session so anyone (recruiters,
+// link clickers) can land on the dashboard without registering.
+func enterDemo(c echo.Context) error {
+	sess, _ := session.Get(sessionName, c)
+	sess.Values["demo"] = true
+	if err := sess.Save(c.Request(), c.Response()); err != nil {
+		log.Printf("session save (demo) failed: %v", err)
+	}
+	return c.Redirect(http.StatusSeeOther, "/index.html")
+}
+
+// apiMe returns the current session state so the client can render demo /
+// auth UI without exposing the HttpOnly session cookie to JS.
+func apiMe(c echo.Context) error {
+	sess, _ := session.Get(sessionName, c)
+	out := map[string]interface{}{
+		"authenticated": false,
+		"demo":          false,
+		"email":         nil,
+	}
+	if v, ok := sess.Values["email"].(string); ok && v != "" {
+		out["authenticated"] = true
+		out["email"] = v
+	}
+	if v, ok := sess.Values["demo"].(bool); ok && v {
+		out["demo"] = true
+	}
+	return c.JSON(http.StatusOK, out)
 }
 
 // logout clears the session cookie and bounces the user back to the login page.
@@ -400,6 +436,8 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.File("content/public/login-page.html")
 	})
+	e.GET("/demo", enterDemo)
+	e.GET("/api/me", apiMe)
 	e.POST("/register", register)
 	e.POST("/login", login)
 	e.POST("/logout", logout)
