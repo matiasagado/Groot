@@ -12,24 +12,13 @@
 		<header>
 			<h2 class="logo">LogParse AI</h2>
 			<nav class="navigation">
-				<button
-					class="log-in-button"
-					aria-label="Login"
-					hx-get="#login-form"
-					hx-target=".login-container"
-					hx-trigger="click"
-				>
+				<button class="log-in-button" aria-label="Login" type="button">
 					Login
 				</button>
 			</nav>
 		</header>
 		<div class="container">
-			<span
-				class="icon-close"
-				hx-trigger="click"
-				hx-get="#login-form"
-				hx-target=".login-container"
-			>
+			<span class="icon-close" role="button" aria-label="Close">
 				<ion-icon name="close"></ion-icon>
 			</span>
 
@@ -81,13 +70,7 @@
 					<div class="login-register">
 						<p>
 							Don't have an account?
-							<a
-								class="register-link"
-								hx-get="#register-form"
-								hx-target=".register-container"
-								hx-trigger="click"
-								>Register</a
-							>
+							<a class="register-link" role="button">Register</a>
 						</p>
 					</div>
 				</form>
@@ -152,13 +135,7 @@
 					<div class="login-register">
 						<p>
 							Already have an account?
-							<a
-								class="login-link"
-								hx-get="#login-form"
-								hx-target=".login-container"
-								hx-trigger="click"
-								>Login</a
-							>
+							<a class="login-link" role="button">Login</a>
 						</p>
 					</div>
 				</form>
