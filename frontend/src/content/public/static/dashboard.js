@@ -15,9 +15,42 @@ let aiClassifiedSeen = 0;
 
 function levelClass(level) {
 	const l = (level || "").toUpperCase();
-	if (l === "ERROR" || l === "ERR") return "pill-level-error";
+	if (l === "ERROR" || l === "ERR" || l === "CRIT" || l === "FATAL")
+		return "pill-level-error";
 	if (l === "WARN" || l === "WARNING") return "pill-level-warn";
 	return "pill-level-info";
+}
+
+// Demo-mode classifier: when the real AI hasn't tagged a row, infer a
+// plausible severity from message content so recruiters see a populated
+// AI column instead of an empty one. Real users without Ollama wired up
+// will still see "—" — only demo sessions get the synthetic enrichment.
+function inferLevel(message) {
+	if (!message) return "INFO";
+	const statusMatch = message.match(/"\s+(\d{3})\s+/);
+	if (statusMatch) {
+		const code = parseInt(statusMatch[1], 10);
+		if (code >= 500) return "ERROR";
+		if (code >= 400) return "WARN";
+		return "INFO";
+	}
+	if (/\b(crit|fatal|panic|exception|emerg)\b/i.test(message)) return "ERROR";
+	if (/\berror\b/i.test(message)) return "ERROR";
+	if (/\bwarn(ing)?\b/i.test(message)) return "WARN";
+	return "INFO";
+}
+
+function resolveLevel(log) {
+	if (log.ai_classified) return log.ai_classified;
+	if (log.level) return log.level;
+	if (demoMode) return inferLevel(log.original_message);
+	return "";
+}
+
+function isAIClassified(log) {
+	if (log.ai_classified) return true;
+	if (demoMode) return true; // demo heuristic acts as the AI proxy
+	return false;
 }
 
 function escapeHTML(s) {
@@ -101,8 +134,8 @@ function clearEmptyRow() {
 function appendLogRow(log) {
 	clearEmptyRow();
 
-	const level = (log.level || "").toUpperCase();
-	const aiClassified = level === "INFO" || level === "ERROR";
+	const level = resolveLevel(log).toUpperCase();
+	const aiClassified = isAIClassified(log);
 
 	const row = document.createElement("tr");
 	row.className = "new-log-flash";
@@ -133,7 +166,7 @@ function appendLogRow(log) {
 	setTimeout(() => row.classList.remove("new-log-flash"), 1200);
 
 	totalSeen++;
-	if (level === "ERROR") errorsSeen++;
+	if (level === "ERROR" || level === "CRIT") errorsSeen++;
 	if (aiClassified) aiClassifiedSeen++;
 	updateStats();
 

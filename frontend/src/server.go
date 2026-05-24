@@ -343,20 +343,22 @@ func streamClassifiedLogs(c echo.Context) error {
 	}
 	defer conn.Close()
 
-	startTime := time.Now().UTC().Add(-15 * time.Second)
+	// Start at the zero time so the first poll backfills whatever's already
+	// in ClickHouse. After that, startTime advances to the wall clock and
+	// the loop only picks up new ingest.
+	startTime := time.Time{}
 
 	for {
 		query := fmt.Sprintf(`
 			SELECT
 				dt,
+				coalesce(level, '') AS level,
 				ai_classified_level,
 				original_message,
 				platform,
 				uuid
             FROM user_log_data
             WHERE dt > '%s'
-            AND ai_classified_level IS NOT NULL
-            AND ai_classified_level != ''
             ORDER BY dt ASC;
 		`, startTime.Format("2006-01-02 15:04:05"))
 
@@ -368,6 +370,7 @@ func streamClassifiedLogs(c echo.Context) error {
 		for rows.Next() {
 			var (
 				dt                time.Time
+				level             string
 				aiClassifiedLevel string
 				originalMessage   string
 				platform          string
@@ -377,19 +380,24 @@ func streamClassifiedLogs(c echo.Context) error {
 			hasRows = true
 
 			// Scan the row into variables
-			if err := rows.Scan(&dt, &aiClassifiedLevel, &originalMessage, &platform, &uuid); err != nil {
+			if err := rows.Scan(&dt, &level, &aiClassifiedLevel, &originalMessage, &platform, &uuid); err != nil {
 				fmt.Printf("Error scanning rows: %v\n", err)
 				return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to parse rows: %v", err))
 			}
 
 			formattedDt := dt.Format("2006-01-02 15:04:05")
 
-			// Construct the log data
+			// Construct the log data. Both `level` (parser-extracted severity)
+			// and `ai_classified` (LLM output) are sent so the client can pick
+			// the best available — or run a demo-mode heuristic when both are
+			// empty.
 			logData := map[string]interface{}{
 				"dt":               formattedDt,
-				"level":            aiClassifiedLevel,
+				"level":            level,
+				"ai_classified":    aiClassifiedLevel,
 				"original_message": originalMessage,
 				"platform":         platform,
+				"uuid":             uuid,
 			}
 
 			// Convert log data to JSON
