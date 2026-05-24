@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -148,52 +150,50 @@ func login(c echo.Context) error {
 	return c.NoContent(http.StatusSeeOther)
 }
 
-// register handles user registration by validating the input and saving the new user to the database
+// register handles user registration by validating the input and saving the new user to the database.
+// Error responses route into #password-error-register via htmx HX-Retarget so the form keeps user
+// input and the error renders inline. Returning 200 is intentional — htmx 1.9 skips swaps on 4xx.
 func register(c echo.Context) error {
-
 	username := c.FormValue("username")
 	email := c.FormValue("register-email")
 	password := c.FormValue("register-password")
 
-	if username == "" || email == "" || password == "" {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message": "Username, email, and password are required",
-		})
+	renderError := func(items ...string) error {
+		c.Response().Header().Set("HX-Retarget", "#password-error-register")
+		c.Response().Header().Set("HX-Reswap", "innerHTML")
+		var b strings.Builder
+		b.WriteString(`<ul class="error-list">`)
+		for _, item := range items {
+			b.WriteString("<li>")
+			b.WriteString(html.EscapeString(strings.TrimSpace(item)))
+			b.WriteString("</li>")
+		}
+		b.WriteString("</ul>")
+		return c.HTML(http.StatusOK, b.String())
 	}
 
-	errors := validatePassword(password)
-	if len(errors) > 0 {
-		errorMessage := "Password must have:\n"
-		for _, error := range errors {
-			errorMessage += error
-		}
+	if username == "" || email == "" || password == "" {
+		return renderError("Username, email, and password are required")
+	}
 
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message":      "Password validation failed",
-			"errorMessage": errorMessage,
-		})
+	if pwErrors := validatePassword(password); len(pwErrors) > 0 {
+		return renderError(pwErrors...)
 	}
 
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "Failed to process password",
-		})
+		return renderError("Could not register, please try again")
 	}
 
 	insertQuery := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
 	_, err = db.Exec(insertQuery, username, email, hashedPassword)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.Code == sqlite3.ErrConstraint {
-			return c.JSON(http.StatusConflict, map[string]interface{}{
-				"message": "Email already exists",
-			})
+			return renderError("Email already registered")
 		}
 		log.Printf("Error inserting user into database: %v", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"message": "Failed to register user",
-		})
+		return renderError("Could not register, please try again")
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/index.html")
