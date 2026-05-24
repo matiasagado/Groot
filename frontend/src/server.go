@@ -103,9 +103,12 @@ func logout(c echo.Context) error {
 }
 
 // startSession marks the current request as authenticated for the given email.
+// Clears any prior demo flag so users who visited /demo before registering
+// still land on the real dashboard once they have credentials.
 func startSession(c echo.Context, email string) error {
 	sess, _ := session.Get(sessionName, c)
 	sess.Values["email"] = email
+	delete(sess.Values, "demo")
 	return sess.Save(c.Request(), c.Response())
 }
 
@@ -361,6 +364,15 @@ func streamClassifiedLogs(c echo.Context) error {
 	startTime := time.Time{}
 	firstIteration := true
 
+	// Demo sessions read the PoC's synthetic nginx stream (platform='Nginx',
+	// produced by mock-vector-client). Real sessions read everything else, so
+	// the dashboard is empty until real project Vectors start writing rows
+	// with their own platform labels — demo keeps working regardless.
+	sourceFilter := "AND platform != 'Nginx'"
+	if isDemo {
+		sourceFilter = "AND platform = 'Nginx'"
+	}
+
 	for {
 		query := fmt.Sprintf(`
 			SELECT
@@ -371,9 +383,9 @@ func streamClassifiedLogs(c echo.Context) error {
 				platform,
 				uuid
             FROM user_log_data
-            WHERE dt > '%s'
+            WHERE dt > '%s' %s
             ORDER BY dt ASC;
-		`, startTime.Format("2006-01-02 15:04:05"))
+		`, startTime.Format("2006-01-02 15:04:05"), sourceFilter)
 
 		rows := make_clickhouse_query(query)
 

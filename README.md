@@ -1,29 +1,88 @@
-# Log Parse PoC
+# Groot
 
-### What is this
+AI log analysis. Logs come in, an LLM reads them, anomalies and plain-English summaries come out.
 
-This is a proof of concept for our log parsing AI efforts.
+Groot is the intelligence layer over my personal project portfolio — it ingests logs from four of my projects, weighs them by user impact, and surfaces what's worth my attention.
 
-The current state of this is:
+---
 
-1. A mock logger service (vector.dev and other ones) push logs to the log-preprocessor.
-2. The log-preprocessor both publishes log lines to the Redis queue and stores them long term in Clickhouse DB.
-3. Redis holds these log lines until the ai-core can consume them.
-4. The AI-Core when logs are available will pop a log off the queue one-by-one, processing each one until fetching the next one.
-5. 
+## Origins
 
-### What is missing from this repo:
+The original proof of concept was a senior team project sponsored by [Erik (@StealthBadger747)](https://github.com/StealthBadger747). That codebase established the core architecture — a Go log ingest pipeline, a Redis queue feeding a Python AI worker, ClickHouse for long-term storage, and a Go web UI — and validated that a locally-hosted LLM could produce useful analysis on streaming log data.
 
-- ~~After much experimentation we are using [TabbyAPI](https://github.com/theroyallab/tabbyAPI) as the interface to our LLM. The engine it is using [ExLLamaV2](https://github.com/turboderp/exllamav2) to run the model.~~
-- The LLM backends as they don't belong in here. We are using Ollama and Mozilla Ocho llamafile which are both open source model running backends that expose an OpenAI Compatible API.
-- A lot of the https://vector.dev configurations are not checked in here. There has been a lot of work done on those transformations.
+This repository is a fork of that work, migrated onto my own infrastructure and evolved into a portfolio piece.
 
-- Currently the database output needs to be built out. I'll update this when I complete that.
+## What I Changed
 
+| Original PoC | This rebuild |
+|---|---|
+| Ran on the senior team's headscale network | Runs on my own Tailscale mesh against my homelab |
+| LLM endpoint pointed at a teammate's desktop | Points at the Ollama instance on my homelab Dell XPS |
+| `deepseek-coder-v2` as the analysis model | `qwen2.5-coder:7b` — better JSON-mode compliance, lower memory footprint |
+| Single-source ingest (one app's logs) | Multi-source ingest across four of my projects, with per-source severity weighting |
+| Token-auth plumbing for the team's LLM gateway | Removed — Ollama on the Tailnet is unauthenticated |
+| Vector clients ran from team-issued machines | Logs ship through the homelab's Promtail/Loki stack and Groot reads from there |
 
-### Instructions
+The migration was the easy part. The interesting work is the per-project weighting and the integration back into the homelab's observability surface.
 
-1. Connect to our head/tailscale network (ask Erik / @StealthBadger747 for help)
-2. Create a Python venv for this project and install the `requirements.txt` file.
-3. Add the `OAI_TOKEN` to the `docker-compose.yml`
-4. Now you can do `docker compose up --build` (the `--build` flag is important, otherwise changes will not be picked up).
+## What Groot Reads
+
+Four projects feed Groot, in two tiers:
+
+**Real-user projects (production-class signal):**
+- **Foothold** — Social connectivity app for college students, licensed to universities.
+- **Totem** — Festival companion app. Friend groups coordinate who is seeing which artist across a festival's multiple stages.
+
+**Showcase projects (low-signal traffic):**
+- **Portfolio** — Public site showcasing my work. Visitors only, no accounts.
+- **Atlas** — Inverted search index from a class project, being finished out as a portfolio piece.
+
+Groot weights findings by user impact, not log volume. A 500 error in Foothold during finals week is treated differently than a 500 from a Portfolio crawler.
+
+## Architecture
+
+```
+Project logs (Foothold, Totem, Portfolio, Atlas)
+        │  Promtail / Vector
+        ▼
+Loki  (on the homelab)
+        │  Loki query API over Tailscale
+        ▼
+log-preprocessor  (Go)
+        ├──►  Redis queue       — short-term work queue for the AI worker
+        └──►  ClickHouse        — long-term storage, queryable from the UI
+
+ai-core  (Python)
+        │  pops one log at a time, calls Ollama, writes the result back
+        ▼
+        ClickHouse + UI
+
+frontend  (Go, Echo)
+        │  reads ClickHouse
+        ▼
+        Web UI for browsing logs and AI annotations
+```
+
+Groot does not host the model. Inference runs on the homelab's Ollama instance — Groot calls it over the Tailnet.
+
+## Stack
+
+| Layer | Tech |
+|---|---|
+| Log ingest | Go (Echo-style HTTP sink) |
+| Work queue | Redis |
+| Long-term storage | ClickHouse |
+| Schema migrations | goose |
+| AI worker | Python — Ollama HTTP client |
+| LLM backend | Ollama (`qwen2.5-coder:7b`) — runs on the homelab, not in this repo |
+| Web UI | Go (Echo) |
+| Log shipping | Vector.dev / Promtail (configured on the homelab side) |
+| Access | Tailscale — no public exposure |
+
+## Status
+
+Migration in progress. The PoC architecture is intact and the pipeline runs end-to-end against synthetic logs; the active work is repointing ingest to real project sources, adding per-project labels and severity weights, and deciding how Groot's findings flow back to the homelab dashboard.
+
+## Acknowledgments
+
+Thanks to [Erik (@StealthBadger747)](https://github.com/StealthBadger747) for sponsoring the original senior project and to the senior team I worked with on the initial PoC. The foundation came from that work; the homelab integration, multi-project ingest, and continued development is mine.
