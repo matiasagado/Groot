@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"regexp"
@@ -328,9 +329,18 @@ func redirectToIndex(c echo.Context) error {
 	return c.File("content/public/index.html")
 }
 
-// streamClassifiedLogs streams classified log data via WebSocket in real-time
+// streamClassifiedLogs streams classified log data via WebSocket in real-time.
+// Demo sessions get randomized inter-row delays so the backfill looks like a
+// real live tail rather than a deterministic dump.
 func streamClassifiedLogs(c echo.Context) error {
 	fmt.Println("WebSocket connection established")
+
+	isDemo := false
+	if sess, err := session.Get(sessionName, c); err == nil {
+		if v, ok := sess.Values["demo"].(bool); ok && v {
+			isDemo = true
+		}
+	}
 
 	// Upgrade the HTTP connection to WebSocket
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -417,7 +427,13 @@ func streamClassifiedLogs(c echo.Context) error {
 			}
 
 			if firstIteration {
-				time.Sleep(80 * time.Millisecond)
+				if isDemo {
+					// Random 3–10s gap simulates real-world ingest tempo.
+					gap := time.Duration(rand.Intn(7000)+3000) * time.Millisecond
+					time.Sleep(gap)
+				} else {
+					time.Sleep(80 * time.Millisecond)
+				}
 			}
 		}
 
