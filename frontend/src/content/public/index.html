@@ -37,13 +37,11 @@
 				</nav>
 
 				<div class="sidebar-footer">
-					<button
-						class="sidebar-logout"
-						type="button"
-						onclick="window.location.href='/login-page.html'"
-					>
-						Sign out
-					</button>
+					<form action="/logout" method="post" class="sidebar-logout-form">
+						<button class="sidebar-logout" type="submit">
+							Sign out
+						</button>
+					</form>
 				</div>
 			</aside>
 

@@ -9,16 +9,57 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// sessionName is the cookie key used to track logged-in users.
+const sessionName = "groot"
+
+// requireAuth gates a route on the presence of a valid session.
+// For WebSocket upgrades and htmx requests it returns 401 so the client
+// can surface an error instead of being told to follow a 303 to HTML.
+func requireAuth(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		sess, err := session.Get(sessionName, c)
+		if err == nil && sess.Values["email"] != nil {
+			return next(c)
+		}
+		if c.Request().Header.Get("Upgrade") == "websocket" ||
+			c.Request().Header.Get("HX-Request") == "true" {
+			return c.NoContent(http.StatusUnauthorized)
+		}
+		return c.Redirect(http.StatusSeeOther, "/login-page.html")
+	}
+}
+
+// logout clears the session cookie and bounces the user back to the login page.
+func logout(c echo.Context) error {
+	sess, _ := session.Get(sessionName, c)
+	sess.Options.MaxAge = -1
+	sess.Values = map[interface{}]interface{}{}
+	if err := sess.Save(c.Request(), c.Response()); err != nil {
+		log.Printf("session save (logout) failed: %v", err)
+	}
+	return c.Redirect(http.StatusSeeOther, "/login-page.html")
+}
+
+// startSession marks the current request as authenticated for the given email.
+func startSession(c echo.Context, email string) error {
+	sess, _ := session.Get(sessionName, c)
+	sess.Values["email"] = email
+	return sess.Save(c.Request(), c.Response())
+}
 
 // WebSocket upgrader configuration for handling WebSocket connections
 var upgrader = websocket.Upgrader{
@@ -140,6 +181,10 @@ func login(c echo.Context) error {
 		return renderError("Invalid credentials")
 	}
 
+	if err := startSession(c, email); err != nil {
+		log.Printf("session save (login) failed: %v", err)
+	}
+
 	c.Response().Header().Set("HX-Redirect", "/index.html")
 	return c.NoContent(http.StatusSeeOther)
 }
@@ -188,6 +233,10 @@ func register(c echo.Context) error {
 		}
 		log.Printf("Error inserting user into database: %v", err)
 		return renderError("Could not register, please try again")
+	}
+
+	if err := startSession(c, email); err != nil {
+		log.Printf("session save (register) failed: %v", err)
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/index.html")
@@ -333,20 +382,39 @@ func main() {
 		templates: template.Must(template.ParseGlob("content/private/views/*.html")),
 	}
 
-	e.Static("/", "content/public")
-	e.Static("/static", "content/public/static")
+	sessionKey := os.Getenv("SESSION_KEY")
+	if sessionKey == "" {
+		log.Println("WARN: SESSION_KEY not set; using insecure dev default. Set SESSION_KEY in .env for production.")
+		sessionKey = "groot-dev-key-do-not-use-in-production"
+	}
+	store := sessions.NewCookieStore([]byte(sessionKey))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   60 * 60 * 24 * 7,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	e.Use(session.Middleware(store))
 
-	e.GET("/goto-index", redirectToIndex)
-
+	// Public endpoints.
 	e.GET("/", func(c echo.Context) error {
 		return c.File("content/public/login-page.html")
 	})
-
 	e.POST("/register", register)
 	e.POST("/login", login)
+	e.POST("/logout", logout)
 
-	e.POST("/filterLogs", filterLogs)
-	e.GET("/classifiedLogsWebSocket", streamClassifiedLogs)
+	// Protected views and APIs.
+	e.GET("/index.html", func(c echo.Context) error {
+		return c.File("content/public/index.html")
+	}, requireAuth)
+	e.GET("/goto-index", redirectToIndex, requireAuth)
+	e.POST("/filterLogs", filterLogs, requireAuth)
+	e.GET("/classifiedLogsWebSocket", streamClassifiedLogs, requireAuth)
+
+	// Static must come after explicit routes so /index.html hits the guarded handler.
+	e.Static("/", "content/public")
+	e.Static("/static", "content/public/static")
 
 	e.Logger.Fatal(e.Start("0.0.0.0:1323"))
 }

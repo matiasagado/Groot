@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS build
+FROM golang:1.25-alpine AS build
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN go mod download
 COPY src .
 RUN CGO_ENABLED=1 go build -o server .
 
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 WORKDIR /app
 
