@@ -1,8 +1,14 @@
+import os
 import redis
 import re
 
-# Connect to Redis
-r = redis.Redis(host='logparse-nix.internal-headscale.ucaia.com', port=6379)
+# Connect to Redis. Defaults match the scraper's own docker-compose, which
+# exposes redis on localhost:6379. Override via env when running against a
+# different host.
+r = redis.Redis(
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", "6379")),
+)
 
 # Ping the server to ensure the connection works
 try:
