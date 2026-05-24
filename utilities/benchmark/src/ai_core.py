@@ -9,9 +9,11 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Example prompt template for OpenAI compatible API
-OAI_API_URL = "http://bugatti.internal-headscale.ucaia.com:8920/v1/chat/completions"
-OAI_TOKEN = "aa"
+# OpenAI-compatible endpoint. Ollama exposes one at /v1/chat/completions on
+# the homelab; the benchmark stays generic so it can be repointed at any
+# OAI-compatible LLM server for comparison runs.
+OAI_API_URL = os.environ["OAI_API_URL"]
+BENCHMARK_MODEL = os.getenv("BENCHMARK_MODEL", "qwen2.5-coder:7b")
 ONE_SHOT_PROMPT = """Please classify if the INPUT log line is an error, classifying it as INFO or ERROR. Please end the response in this format CLASSIFICATION: INFO or CLASSIFICATION: ERROR.
 INPUT: 
 {input}
@@ -24,11 +26,12 @@ def extract_classification(result_text):
 
 def classify_log_line(log_line, prompt_template):
     prompt = prompt_template.format(input=log_line)
-    payload = {"max_tokens": 50, "messages": [{"role": "user", "content": prompt}]}
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {OAI_TOKEN}",
+    payload = {
+        "model": BENCHMARK_MODEL,
+        "max_tokens": 50,
+        "messages": [{"role": "user", "content": prompt}],
     }
+    headers = {"Content-Type": "application/json"}
 
     try:
         start_time = time.time()
