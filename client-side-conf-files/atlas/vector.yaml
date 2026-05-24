@@ -1,0 +1,40 @@
+# Vector config for shipping Atlas logs to the homelab Loki.
+#
+# Atlas is a low-signal source — no real users; useful to Groot mostly as a
+# noisy test stream during development. Helpful for exercising the pipeline
+# without paging on anything.
+#
+# Deployment:
+#   1. Install Vector on the Atlas host.
+#   2. Drop this file at /etc/vector/vector.yaml.
+#   3. Set LOKI_PUSH_URL in Vector's environment to the homelab Loki over
+#      Tailscale, e.g. LOKI_PUSH_URL=http://<xps-tailscale-ip>:3100
+#   4. Adjust `sources.app_logs.include` below to point at Atlas's real log
+#      paths once the project is wired up.
+
+sources:
+  app_logs:
+    type: file
+    include:
+      - /var/log/atlas/*.log      # TODO: real paths
+    read_from: beginning
+    ignore_older_secs: 600
+
+transforms:
+  enrich:
+    type: remap
+    inputs: ["app_logs"]
+    source: |
+      .project = "atlas"
+      .host = get_hostname() ?? "unknown"
+
+sinks:
+  loki:
+    type: loki
+    inputs: ["enrich"]
+    endpoint: ${LOKI_PUSH_URL:?LOKI_PUSH_URL must be set to the homelab Loki push URL}
+    encoding:
+      codec: json
+    labels:
+      project: atlas
+      host: "{{ .host }}"

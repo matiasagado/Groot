@@ -1,0 +1,39 @@
+# Vector config for shipping Foothold logs to the homelab Loki.
+#
+# Foothold is a real-user (production-class) source. Anomalies here are
+# user-impact signal, not noise — Groot weighs them accordingly.
+#
+# Deployment:
+#   1. Install Vector on the Foothold host.
+#   2. Drop this file at /etc/vector/vector.yaml.
+#   3. Set LOKI_PUSH_URL in Vector's environment to the homelab Loki over
+#      Tailscale, e.g. LOKI_PUSH_URL=http://<xps-tailscale-ip>:3100
+#   4. Adjust `sources.app_logs.include` below to point at Foothold's real
+#      log paths (stdout via journald, structured log files, etc).
+
+sources:
+  app_logs:
+    type: file
+    include:
+      - /var/log/foothold/*.log   # TODO: real paths
+    read_from: beginning
+    ignore_older_secs: 600
+
+transforms:
+  enrich:
+    type: remap
+    inputs: ["app_logs"]
+    source: |
+      .project = "foothold"
+      .host = get_hostname() ?? "unknown"
+
+sinks:
+  loki:
+    type: loki
+    inputs: ["enrich"]
+    endpoint: ${LOKI_PUSH_URL:?LOKI_PUSH_URL must be set to the homelab Loki push URL}
+    encoding:
+      codec: json
+    labels:
+      project: foothold
+      host: "{{ .host }}"

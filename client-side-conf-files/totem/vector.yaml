@@ -1,0 +1,40 @@
+# Vector config for shipping Totem logs to the homelab Loki.
+#
+# Totem is a real-user (production-class) source with festival-spiky
+# traffic — most of the year is quiet, festival weekends are intense. Worth
+# considering separate sensitivity windows during festival mode.
+#
+# Deployment:
+#   1. Install Vector on the Totem host.
+#   2. Drop this file at /etc/vector/vector.yaml.
+#   3. Set LOKI_PUSH_URL in Vector's environment to the homelab Loki over
+#      Tailscale, e.g. LOKI_PUSH_URL=http://<xps-tailscale-ip>:3100
+#   4. Adjust `sources.app_logs.include` below to point at Totem's real log
+#      paths.
+
+sources:
+  app_logs:
+    type: file
+    include:
+      - /var/log/totem/*.log      # TODO: real paths
+    read_from: beginning
+    ignore_older_secs: 600
+
+transforms:
+  enrich:
+    type: remap
+    inputs: ["app_logs"]
+    source: |
+      .project = "totem"
+      .host = get_hostname() ?? "unknown"
+
+sinks:
+  loki:
+    type: loki
+    inputs: ["enrich"]
+    endpoint: ${LOKI_PUSH_URL:?LOKI_PUSH_URL must be set to the homelab Loki push URL}
+    encoding:
+      codec: json
+    labels:
+      project: totem
+      host: "{{ .host }}"

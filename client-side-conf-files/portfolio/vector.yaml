@@ -1,0 +1,47 @@
+# Vector config for shipping Portfolio site logs to the homelab Loki.
+#
+# Portfolio is a low-signal source — visitors only, no accounts. Treat
+# anomalies as scraper/uptime noise rather than user-impact incidents.
+#
+# Portfolio is a static site behind nginx, so this config tails nginx logs
+# directly. If the access logs use the enhanced JSON format from
+# _shared/nginx-enhanced-json.conf, parsing is mostly free; otherwise, copy
+# the `nginx_parser` transform from _shared/nginx-parser.yaml into this
+# file and wire it between `nginx_logs` and `enrich`.
+#
+# Deployment:
+#   1. Install Vector on the Portfolio host.
+#   2. Drop this file at /etc/vector/vector.yaml.
+#   3. Set LOKI_PUSH_URL in Vector's environment to the homelab Loki over
+#      Tailscale, e.g. LOKI_PUSH_URL=http://<xps-tailscale-ip>:3100
+#   4. Confirm nginx is writing to /var/log/nginx/*.log (default on most
+#      distros). Adjust `include` if not.
+
+sources:
+  nginx_logs:
+    type: file
+    include:
+      - /var/log/nginx/*.log
+    exclude:
+      - /var/log/nginx/enhanced-access-json.log
+    read_from: beginning
+    ignore_older_secs: 600
+
+transforms:
+  enrich:
+    type: remap
+    inputs: ["nginx_logs"]
+    source: |
+      .project = "portfolio"
+      .host = get_hostname() ?? "unknown"
+
+sinks:
+  loki:
+    type: loki
+    inputs: ["enrich"]
+    endpoint: ${LOKI_PUSH_URL:?LOKI_PUSH_URL must be set to the homelab Loki push URL}
+    encoding:
+      codec: json
+    labels:
+      project: portfolio
+      host: "{{ .host }}"
