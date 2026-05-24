@@ -3,149 +3,117 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>Log In</title>
-		<link rel="stylesheet" href="./static/login-styles.css?v=2" />
+		<title>Groot — Sign in</title>
+		<link rel="stylesheet" href="./static/login-styles.css?v=3" />
 		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 	</head>
 	<body>
-		<header>
-			<h2 class="logo">LogParse AI</h2>
-			<nav class="navigation">
-				<button class="log-in-button" aria-label="Login" type="button">
-					Login
-				</button>
-			</nav>
-		</header>
-		<div class="container">
-			<span class="icon-close" role="button" aria-label="Close">
-				<ion-icon name="close"></ion-icon>
-			</span>
+		<main class="auth-shell">
+			<div class="auth-card">
+				<header class="auth-brand">
+					<h1 class="wordmark">Groot</h1>
+					<p class="tagline">AI log analysis</p>
+				</header>
 
-			<div class="form-box login">
-				<h2>Login</h2>
+				<nav class="auth-tabs" role="tablist">
+					<button
+						type="button"
+						class="auth-tab is-active"
+						data-form="login"
+						role="tab"
+						aria-selected="true"
+					>
+						Sign in
+					</button>
+					<button
+						type="button"
+						class="auth-tab"
+						data-form="register"
+						role="tab"
+						aria-selected="false"
+					>
+						Create account
+					</button>
+				</nav>
+
 				<form
 					id="login-form"
+					class="auth-form"
 					method="post"
 					hx-post="/login"
 					hx-target="#login-form"
 				>
-					<div class="input-box">
-						<span class="icon">
-							<ion-icon name="mail"></ion-icon>
-						</span>
+					<label class="auth-field">
+						<span class="auth-label">Email</span>
 						<input
 							type="email"
-							required
-							id="email"
-							aria-label="Email"
 							name="email"
+							autocomplete="email"
+							required
 						/>
-						<label for="email">Email</label>
-					</div>
-					<div class="input-box">
-						<span class="icon">
-							<ion-icon name="lock-closed"></ion-icon>
-						</span>
+					</label>
+					<label class="auth-field">
+						<span class="auth-label">Password</span>
 						<input
 							type="password"
-							required
-							id="password"
-							aria-label="Password"
 							name="password"
+							autocomplete="current-password"
+							required
 						/>
-						<label for="password">Password</label>
-					</div>
+					</label>
 					<div
 						id="password-error-login"
 						class="error-message"
 						aria-live="polite"
 					></div>
-					<div class="remember-forgot"></div>
-					<button type="submit" class="btn" hx-target="error-login">
-						Login
-					</button>
-					<div class="login-register">
-						<p>
-							Don't have an account?
-							<a class="register-link" role="button">Register</a>
-						</p>
-					</div>
+					<button type="submit" class="auth-submit">Sign in</button>
 				</form>
-			</div>
-			<div class="form-box register">
-				<h2>Register</h2>
+
 				<form
 					id="register-form"
+					class="auth-form is-hidden"
 					method="post"
 					hx-post="/register"
 					hx-target="#register-form"
-					hx-boost="true"
 				>
-					<div class="input-box">
-						<span class="icon">
-							<ion-icon name="person"></ion-icon>
-						</span>
+					<label class="auth-field">
+						<span class="auth-label">Username</span>
 						<input
 							type="text"
-							required
-							id="username"
-							aria-label="Username"
 							name="username"
+							autocomplete="username"
+							required
 						/>
-						<label for="register-username">Username</label>
-					</div>
-					<div class="input-box">
-						<span class="icon">
-							<ion-icon name="mail"></ion-icon>
-						</span>
+					</label>
+					<label class="auth-field">
+						<span class="auth-label">Email</span>
 						<input
 							type="email"
-							required
-							id="register-email"
-							aria-label="Email"
 							name="register-email"
+							autocomplete="email"
+							required
 						/>
-						<label for="register-email">Email</label>
-					</div>
-					<div class="input-box">
-						<span class="icon">
-							<ion-icon name="lock-closed"></ion-icon>
-						</span>
+					</label>
+					<label class="auth-field">
+						<span class="auth-label">Password</span>
 						<input
 							type="password"
-							required
-							id="register-password"
-							aria-label="Password"
 							name="register-password"
+							autocomplete="new-password"
+							required
 						/>
-						<label for="register-password">Password</label>
-					</div>
+					</label>
 					<div
 						id="password-error-register"
 						class="error-message"
 						aria-live="polite"
 					></div>
-					<div class="remember-forgot"></div>
-					<button type="submit" class="btn">Register</button>
-					<div class="login-register">
-						<p>
-							Already have an account?
-							<a class="login-link" role="button">Login</a>
-						</p>
-					</div>
+					<button type="submit" class="auth-submit">
+						Create account
+					</button>
 				</form>
 			</div>
-		</div>
-
-		<script src="script.js"></script>
-		<script
-			type="module"
-			src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
-		></script>
-		<script
-			nomodule
-			src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
-		></script>
+		</main>
+		<script src="./script.js?v=2"></script>
 	</body>
 </html>

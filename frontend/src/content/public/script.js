@@ -1,21 +1,21 @@
-const container = document.querySelector(".container");
-const loginLink = document.querySelector(".login-link");
-const registerLink = document.querySelector(".register-link");
-const btnPopUp = document.querySelector(".log-in-button");
-const iconClose = document.querySelector(".icon-close");
+const tabs = document.querySelectorAll(".auth-tab");
+const forms = {
+	login: document.getElementById("login-form"),
+	register: document.getElementById("register-form"),
+};
 
-registerLink.addEventListener("click", () => {
-	container.classList.add("active");
-});
+function activateForm(name) {
+	tabs.forEach((tab) => {
+		const active = tab.dataset.form === name;
+		tab.classList.toggle("is-active", active);
+		tab.setAttribute("aria-selected", active ? "true" : "false");
+	});
+	Object.entries(forms).forEach(([key, form]) => {
+		if (!form) return;
+		form.classList.toggle("is-hidden", key !== name);
+	});
+}
 
-loginLink.addEventListener("click", () => {
-	container.classList.remove("active");
-});
-
-btnPopUp.addEventListener("click", () => {
-	container.classList.add("active-popup");
-});
-
-iconClose.addEventListener("click", () => {
-	container.classList.remove("active-popup");
+tabs.forEach((tab) => {
+	tab.addEventListener("click", () => activateForm(tab.dataset.form));
 });
