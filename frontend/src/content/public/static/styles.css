@@ -464,6 +464,11 @@ body {
   display: block;
 }
 
+.msg-summary[hidden],
+.msg-raw[hidden] {
+  display: none;
+}
+
 .msg-raw {
   font-family: var(--mono);
   font-size: 12px;
