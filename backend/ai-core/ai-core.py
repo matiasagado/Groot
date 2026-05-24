@@ -37,7 +37,6 @@ CLICKHOUSE_CONFIG = {
 }
 
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL')
-OLLAMA_TOKEN = os.getenv('OLLAMA_TOKEN')
 OLLAMA_MODEL_NAME = os.getenv('OLLAMA_MODEL_NAME')
 ONE_SHOT_PROMPT = """Please classify each of the following log lines as either INFO or ERROR. Anything in between, such as a warning, should be classified as ERROR. Your response should be in this format: "CLASSIFICATION: ERROR/INFO". Do not output anything else or anything after INFO or ERROR. 
 INPUT: 
@@ -87,8 +86,8 @@ def extract_classification(result_text: str) -> Optional[str]:
 
 def classify_log_line(log_line: str, prompt_template: str) -> Optional[Dict[str, Any]]:
     """Classify a log line with retry logic."""
-    if not all([OLLAMA_API_URL, OLLAMA_TOKEN]):
-        raise ValueError("Missing required environment variables: OLLAMA_API_URL or OLLAMA_TOKEN")
+    if not OLLAMA_API_URL:
+        raise ValueError("Missing required environment variable: OLLAMA_API_URL")
 
     prompt = prompt_template.format(input=log_line)
 
