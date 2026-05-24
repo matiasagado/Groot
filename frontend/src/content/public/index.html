@@ -1,121 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Groot — Logs</title>
+		<link rel="stylesheet" href="/static/styles.css?v=2" />
+	</head>
+	<body>
+		<div class="app">
+			<aside class="sidebar">
+				<div class="sidebar-brand">
+					<h1 class="wordmark">Groot</h1>
+					<p class="brand-tag">AI log analysis</p>
+				</div>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Logs Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link rel="stylesheet" href="/static/styles.css">
-  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-</head>
+				<nav class="sidebar-nav" aria-label="Primary">
+					<span class="sidebar-section">Views</span>
+					<a href="/index.html" class="sidebar-link is-active">
+						<svg
+							class="sidebar-icon"
+							width="16"
+							height="16"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<line x1="3" y1="4" x2="13" y2="4" />
+							<line x1="3" y1="8" x2="13" y2="8" />
+							<line x1="3" y1="12" x2="9" y2="12" />
+						</svg>
+						Logs
+					</a>
+				</nav>
 
-<body>
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <span class="top-bar-title">Logparse AI</span>
-    <button class="logout-btn" onclick="window.location.href='login-page.html'">Logout</button>
-  </div>
+				<div class="sidebar-footer">
+					<button
+						class="sidebar-logout"
+						type="button"
+						onclick="window.location.href='/login-page.html'"
+					>
+						Sign out
+					</button>
+				</div>
+			</aside>
 
-  <!-- Logs Container -->
-  <div class="logs-container">
-    <h1 class="mt-3">System Logs</h1>
-    <div class="controls">
-      <button id="live-btn">Live</button>
-      <button id="refresh-btn">Refresh</button>
-      <div class="dropdown">
-        <button id="sort-btn" class="dropdown-toggle" data-bs-toggle="dropdown">Sort</button>
-        <ul class="dropdown-menu">
-          <li><button class="dropdown-item">Timestamp</button></li>
-          <li><button class="dropdown-item">Severity</button></li>
-          <li><button class="dropdown-item">Source</button></li>
-        </ul>
-      </div>
-      <div class="dropdown">
-        <button id="filter-btn" class="dropdown-toggle" data-bs-toggle="dropdown">Filter</button>
-        <div class="dropdown-menu">
-          <input type="text" id="filter-input" placeholder="Enter SQL query for filtering" class="form-control" />
-        </div>
-      </div>
-      <button id="clear-filters-btn">Clear Filter</button>
-    </div>
-    <div class="table-responsive">
-      <table class="table">
-        <thead class="table-light">
-          <tr>
-            <tr>
-              <th>Timestamp</th>
-              <th>Level</th>
-              <th>Platform</th>
-              <th>Original Message</th>
-            </tr>
-          </tr>
-        </thead>
-        <tbody id="log-table-results">
-        </tbody>
-      </table>
-    </div>
-  </div>
+			<main class="main">
+				<header class="main-header">
+					<h2 class="page-title">Logs</h2>
+					<div
+						class="live-indicator is-active"
+						id="live-indicator"
+						role="button"
+						aria-pressed="true"
+					>
+						<span class="live-dot"></span>
+						<span class="live-label">Live</span>
+					</div>
+				</header>
 
+				<section class="stats" aria-label="Summary">
+					<article class="stat-card">
+						<span class="stat-label">Total logs</span>
+						<span class="stat-value" id="stat-total">—</span>
+					</article>
+					<article class="stat-card">
+						<span class="stat-label">Errors</span>
+						<span class="stat-value" id="stat-errors">—</span>
+					</article>
+					<article class="stat-card">
+						<span class="stat-label">Last hour</span>
+						<span class="stat-value" id="stat-recent">—</span>
+					</article>
+					<article class="stat-card">
+						<span class="stat-label">AI classified</span>
+						<span class="stat-value" id="stat-ai">—</span>
+					</article>
+				</section>
 
-  <!-- WebSocket Script -->
-  <script>
-    // WebSocket connection
-    console.log("Attempting to connect to WebSocket...");
-	const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-	const ws = new WebSocket(wsProtocol + '//' + window.location.host + '/classifiedLogsWebSocket');
-    const logsContainer = document.querySelector('.table-responsive tbody'); // Update to target the table body
+				<section class="filters" aria-label="Filters">
+					<div class="filter-group">
+						<span class="filter-label">Projects</span>
+						<div class="chip-row" role="group">
+							<button
+								class="chip is-active"
+								type="button"
+								data-project="all"
+							>
+								All
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-project="foothold"
+							>
+								foothold
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-project="totem"
+							>
+								totem
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-project="portfolio"
+							>
+								portfolio
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-project="atlas"
+							>
+								atlas
+							</button>
+						</div>
+					</div>
 
-    // On WebSocket connection open
-    ws.onopen = function () {
-      console.log('WebSocket connection established');
-    };
+					<div class="filter-group">
+						<span class="filter-label">Severity</span>
+						<div class="chip-row" role="group">
+							<button
+								class="chip is-active"
+								type="button"
+								data-level="all"
+							>
+								All
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-level="info"
+							>
+								Info
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-level="warn"
+							>
+								Warn
+							</button>
+							<button
+								class="chip"
+								type="button"
+								data-level="error"
+							>
+								Error
+							</button>
+						</div>
+					</div>
+				</section>
 
-      // On receiving a message
-    ws.onmessage = function (event) {
-      console.log('Received log from WebSocket:', event.data);
-      const log = JSON.parse(event.data);
+				<section class="search" aria-label="Search">
+					<div class="search-input">
+						<svg
+							class="search-icon"
+							width="14"
+							height="14"
+							viewBox="0 0 14 14"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<circle cx="6" cy="6" r="4.5" />
+							<line x1="9.5" y1="9.5" x2="12.5" y2="12.5" />
+						</svg>
+						<input
+							type="text"
+							id="search"
+							placeholder="Search logs..."
+							autocomplete="off"
+						/>
+						<kbd class="kbd">⌘K</kbd>
+					</div>
+				</section>
 
-      // Create a new row for the log
-      const logRow = document.createElement('tr');
-      logRow.className = 'new-log-flash'; // Add animation class
+				<section class="log-table" aria-label="Log table">
+					<table>
+						<thead>
+							<tr>
+								<th class="col-time">Time</th>
+								<th class="col-project">Project</th>
+								<th class="col-level">Level</th>
+								<th class="col-ai">AI</th>
+								<th class="col-msg">Message</th>
+							</tr>
+						</thead>
+						<tbody id="log-rows">
+							<tr class="log-row-empty">
+								<td colspan="5">
+									Waiting for logs from the pipeline…
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+			</main>
+		</div>
 
-      logRow.innerHTML = `
-        <td>${log.dt}</td>
-        <td>${log.level}</td>
-        <td>${log.platform}</td>
-        <td>${log.original_message}</td>
-      `;
-
-      // Insert the new row at the top of the logs table
-      logsContainer.insertAdjacentElement('afterbegin', logRow);
-
-      // Remove the animation class after it completes to allow future animations
-      setTimeout(() => {
-        logRow.classList.remove('new-log-flash');
-      }, 1000);
-
-      // Optional: Limit the number of visible logs and remove older ones
-      const maxLogs = 10000; // Adjust as needed
-      const logRows = logsContainer.querySelectorAll('tr');
-      if (logRows.length > maxLogs) {
-        logRows[logRows.length - 1].remove(); // Remove the oldest log
-      }
-    };
-
-    // On WebSocket error
-    ws.onerror = function (error) {
-      console.error('WebSocket error:', error);
-    };
-
-    // On WebSocket close
-    ws.onclose = function () {
-      console.log('WebSocket connection closed');
-    };
-
-  </script>
-
-</body>
-
+		<script src="/static/dashboard.js?v=1"></script>
+	</body>
 </html>

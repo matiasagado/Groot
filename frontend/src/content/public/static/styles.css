@@ -1,299 +1,524 @@
+:root {
+  --bg: #0a0907;
+  --surface: #131110;
+  --surface-2: #1a1714;
+  --surface-hover: #1f1b17;
+  --border: #28231f;
+  --border-strong: #3a3128;
+  --text: #ededed;
+  --text-muted: #a8a195;
+  --text-dim: #6f6960;
+  --accent: #fafafa;
+  --moss: #7fb574;
+  --moss-strong: #95c98b;
+  --moss-dim: rgba(127, 181, 116, 0.15);
+  --info: #6f6960;
+  --warn: #d99a4a;
+  --error: #f85149;
+  --error-dim: rgba(248, 81, 73, 0.12);
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code",
+    Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  font-family: "Arial", sans-serif;
-  background: linear-gradient(
-      to right,
-      rgba(0, 0, 0, 0.7),
-      rgba(43, 43, 237, 0.6)
-    ),
-    url("./background.jpg");
   margin: 0;
   padding: 0;
-  /*padding-top: 60px; /* Push the content below the top bar */
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Top Bar */
-.top-bar {
-  background: rgba(0, 0, 0, 0.8);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  color: white; /* White text */
-  height: 40px; /* Fixed height for the top bar */
-  line-height: 60px; /* Vertically align the text */
-  padding: 10px 20px;
+.app {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 25px;
-  font-weight: bold;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  width: 100%; /* Ensures it spans the entire width */
-  margin: 0; /* Remove default margins */
-  box-sizing: border-box; /* Includes padding in width */
+  min-height: 100vh;
 }
 
-.top-bar .logout-btn {
-  background-color: #ffffff; /* Slightly lighter grey than the top bar */
-  color: rgb(0, 0, 0); /* White text */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif; /* Apple font stack */
-  font-size: 16px; /* Adjust the text size */
-  font-weight: bold;
-  border: none; /* Remove the border */
-  border-radius: 2px; /* Slight rounding */
-  padding: 10px 15px; /* Add padding for better clickability */
-  height: 28px;
-  line-height: 20px; /* Adjust for centered text */
-  display: flex; /* Center the text inside the button */
-  align-items: center;
-  justify-content: center;
-  cursor: pointer; /* Pointer cursor for interactivity */
-  margin: 0; /* Remove default margins */
+/* ---------- Sidebar ---------- */
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-.top-bar .logout-btn:hover {
-  background-color: #cbcbcb; /* Slightly darker grey for hover effect */
+.sidebar-brand {
+  padding: 4px 8px 24px;
 }
 
-.top-bar-title {
+.wordmark {
   margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
-.logs-container {
-  max-width: 1200px;
-  margin: 20px auto; /* Add spacing between top bar and logs container */
-  background: #ffffff;
-  padding: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px; /* Rounded corners for the box */
+.wordmark::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--moss);
+  transform: translateY(-3px);
 }
 
-.logs-container h1 {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  font-size: 20px; /* Adjust font size */
-  font-weight: bold; /* Keep it bold */
-  color: #333; /* Text color */
-  margin: 0; /* Remove any margin */
-  padding-top: 3px; /* Add a small gap at the top */
-  text-align: left; /* Align text to the left */
+.brand-tag {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 12px;
 }
 
-.logs-container .controls {
+.sidebar-section {
+  display: block;
+  padding: 0 8px;
+  margin: 16px 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.sidebar-link {
   display: flex;
-  flex-wrap: wrap; /* Allows buttons to wrap to the next line if needed */
-  justify-content: flex-start; /* Align buttons to the left */
-  gap: 10px; /* Space between buttons */
-  margin-bottom: 10px; /* Space below the buttons */
-  padding-top: 10px; /* Add space between the "Logs" header and the buttons */
-}
-
-.logs-container .controls button {
-  background-color: #5b5b5b; /* Slightly lighter grey than the top bar */
-  color: white; /* White text */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif; /* Apple font stack */
-  font-size: 14px; /* Adjust the text size */
-  font-weight: medium;
-  border: none; /* Remove the border */
-  border-radius: 3px; /* Slight rounding */
-  padding: 10px 15px; /* Add padding for better clickability */
-  height: 21px;
-  line-height: 20px; /* Adjust for centered text */
-  display: flex; /* Center the text inside the button */
   align-items: center;
-  justify-content: center;
-  cursor: pointer; /* Pointer cursor for interactivity */
-  margin: 0; /* Remove default margins */
-}
-
-.logs-container .controls button:hover {
-  background-color: #444444; /* Slightly darker grey on hover */
-  border-color: #868686; /* Adjust the border color on hover */
-}
-
-.header-btn {
-  color: #000000; /* Text color inside the button */
-  margin-right: 10px; /* Space between buttons */
-  background-color: #ffffff;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
-.controls .left-group,
-.controls .center-group {
-  display: flex;
   gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.center-group {
-  justify-content: center;
-  flex-grow: 1; /* Push the center group to the middle */
+.sidebar-link:hover {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-.left-group {
-  flex-grow: 0;
+.sidebar-link.is-active {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-.right-group {
-  flex-grow: 0;
-  justify-content: flex-end;
+.sidebar-icon {
+  flex-shrink: 0;
+  color: currentColor;
 }
 
-/* Style for the entire log table */
-.table {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px; /* Adjust size as needed */
-  color: #333; /* Text color */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
-/* Style for the table headers (Timestamp, Level, etc.) */
-.table th {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px; /* Slightly larger for headers */
-  font-weight: bold;
-  color: #555; /* Header text color */
-  background-color: #f8f9fa; /* Light background for headers */
-  padding: 10px;
+.sidebar-logout {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-/* Style for the table rows (log content) */
-.table td {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px; /* Adjust size for content */
-  padding: 8px;
-  vertical-align: middle; /* Align text vertically */
-  color: #444; /* Row text color */
+.sidebar-logout:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
-/* Style for alternating row background colors for better readability */
-.table tbody tr:nth-child(even) {
-  background-color: #f2f2f2;
+/* ---------- Main ---------- */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 32px 48px;
 }
 
-.logs-container {
-  max-width: 1200px;
-  margin: 20px auto;
-  background: #ffffff;
-  padding: 1px 20px; /* Reduce top and bottom padding */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px; /* Rounded corners for the box */
-}
-
-.logs-container h1 {
-  margin-top: 0; /* Remove the top margin */
-  padding-top: 1px; /* Add a small padding for spacing */
-  font-size: 24px;
-  color: #333;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif; /* Apple's font */
-}
-
-.controls {
+.main-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Live indicator ---------- */
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.live-indicator:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.live-indicator.is-active .live-dot {
+  background: var(--moss);
+  box-shadow: 0 0 0 0 var(--moss);
+  animation: pulse 2s ease-out infinite;
+}
+
+.live-indicator.is-active .live-label {
+  color: var(--moss-strong);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(127, 181, 116, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(127, 181, 116, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(127, 181, 116, 0);
+  }
+}
+
+/* ---------- Stat cards ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Filters ---------- */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin-bottom: 20px;
 }
 
-#log-table-results .tr .td {
-  font-size: 9px;
-  font-style: monospace;
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-#log-search {
-  padding: 10px;
-  margin-right: 10px;
-  width: 100%;
-  font-family: monospace;
+.filter-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  width: 64px;
+  flex-shrink: 0;
 }
 
-#search-area button,
-#refresh-export button {
-  padding: 10px;
-  margin-right: 10px;
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
+
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.chip.is-active {
+  background: var(--moss-dim);
+  border-color: var(--moss);
+  color: var(--moss-strong);
+}
+
+/* ---------- Search ---------- */
+
+.search {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 38px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-input:focus-within {
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px var(--moss-dim);
+}
+
+.search-icon {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.search-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.search-input input::placeholder {
+  color: var(--text-dim);
+}
+
+.kbd {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ---------- Log table ---------- */
 
 .log-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.log-table table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 13px;
 }
 
-.log-header {
-  background: #eee;
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
+.log-table thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 500;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-@keyframes flashRow {
-  0% {
-    background-color: #fff7e6 !important;
-  }
-  50% {
-    background-color: #ffeb99 !important;
-  }
-  100% {
-    background-color: transparent !important;
-  }
+.log-table tbody td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
 }
+
+.log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-table tbody tr:hover td {
+  background: var(--surface-hover);
+}
+
+.col-time {
+  width: 160px;
+  white-space: nowrap;
+}
+
+.col-project {
+  width: 110px;
+}
+
+.col-level {
+  width: 80px;
+}
+
+.col-ai {
+  width: 70px;
+}
+
+.col-msg {
+  word-break: break-word;
+}
+
+.log-table td.col-time,
+.log-table td.col-msg {
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+
+.log-table td.col-time {
+  color: var(--text-muted);
+}
+
+.log-row-empty td {
+  text-align: center;
+  padding: 32px !important;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ---------- Pills (level / project / AI) ---------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.pill-level-info {
+  border-color: var(--info);
+  color: var(--text-muted);
+}
+
+.pill-level-warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.pill-level-error {
+  border-color: var(--error);
+  color: var(--error);
+  background: var(--error-dim);
+}
+
+.pill-ai-yes {
+  border-color: var(--moss);
+  color: var(--moss-strong);
+  background: var(--moss-dim);
+}
+
+.pill-ai-no {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
+/* ---------- New row flash ---------- */
 
 .new-log-flash {
-  animation: flash 1s ease-in-out !important;
+  animation: log-flash 1.2s ease-out;
 }
 
-.log-entry {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  /* transition: background-color 0.3s ease-out; */
+@keyframes log-flash {
+  0% {
+    background: var(--moss-dim);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
-/* .log-entry:nth-child(even) {
-  /* background: #f9f9f9; 
-} */
+/* ---------- Small screens ---------- */
 
-.toolbar-toggle-button {
-  width: 95px;
-  background-color: rgba(24, 24, 27, 0.9);
-  font-feature-settings: "zero";
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.15s;
-  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px;
-  color: rgb(250, 250, 250);
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  white-space: nowrap;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  height: 31.9922px;
-  display: flex;
-  margin: 0px auto;
-  border: 0px solid rgb(228, 228, 231);
-  cursor: pointer;
-  appearance: button;
-  background-image: none;
-  text-transform: none;
-  font-family: __GeistSans_343187, __GeistSans_Fallback_343187, ui-sans-serif,
-    system-ui, -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
-  font-variation-settings: normal;
-  box-sizing: border-box;
-}
-
-.toolbar-toggle-button span {
-  display: block;
-  font-feature-settings: "zero";
-  border: 0px solid rgb(228, 228, 231);
-  box-sizing: border-box;
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+  .main {
+    padding: 20px 16px 32px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
