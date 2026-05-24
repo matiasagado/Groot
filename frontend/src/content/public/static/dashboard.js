@@ -12,6 +12,7 @@ let allRows = []; // newest first
 let currentPage = 1;
 let projectFilter = "all";
 let severityFilter = "all";
+let searchQuery = "";
 let demoMode = false;
 let projects = [];
 
@@ -201,11 +202,27 @@ function levelMatchesFilter(level, filter) {
 	return true;
 }
 
+function matchesSearch(log, q) {
+	if (!q) return true;
+	const haystack = [
+		log.original_message,
+		log.ai_summary || "",
+		projectForLog(log),
+		resolveLevel(log),
+		log.platform || "",
+	]
+		.join(" ")
+		.toLowerCase();
+	return haystack.includes(q);
+}
+
 function applyFilters(rows) {
+	const q = searchQuery.trim().toLowerCase();
 	return rows.filter((log) => {
 		if (projectFilter !== "all" && projectForLog(log) !== projectFilter)
 			return false;
 		if (!levelMatchesFilter(resolveLevel(log), severityFilter)) return false;
+		if (!matchesSearch(log, q)) return false;
 		return true;
 	});
 }
@@ -422,12 +439,21 @@ nextBtn.addEventListener("click", () => {
 	render();
 });
 
-// ---------- Search ⌘K focus ----------
+// ---------- Search ----------
+
+const searchEl = document.getElementById("search");
+if (searchEl) {
+	searchEl.addEventListener("input", () => {
+		searchQuery = searchEl.value;
+		currentPage = 1;
+		render();
+	});
+}
 
 document.addEventListener("keydown", (e) => {
 	if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
 		e.preventDefault();
-		document.getElementById("search")?.focus();
+		searchEl?.focus();
 	}
 });
 
