@@ -37,10 +37,44 @@ function formatTime(dt) {
 	return parts.length === 2 ? parts[1] : dt;
 }
 
-function projectFromPlatform(platform) {
-	// Placeholder: until logs carry a `project` label, fall back to
-	// whatever `platform` says (e.g., "Nginx").
-	return platform || "—";
+// Demo mode + projects come from /api/me; defaults are safe for the
+// pre-fetch render path.
+let demoMode = false;
+let projects = [];
+
+function hashKey(s) {
+	let h = 0;
+	for (let i = 0; i < s.length; i++) {
+		h = ((h << 5) - h) + s.charCodeAt(i);
+		h |= 0;
+	}
+	return Math.abs(h);
+}
+
+function projectForLog(log) {
+	// In demo mode, deterministically assign each row to one of the mock
+	// projects so the chips/rows look like they came from a real fleet.
+	if (demoMode && projects.length > 0) {
+		const key = log.original_message || log.dt || "";
+		return projects[hashKey(key) % projects.length];
+	}
+	return log.platform || "—";
+}
+
+function renderProjectChips(list) {
+	const row = document.getElementById("project-chips");
+	if (!row) return;
+	row.querySelectorAll(".chip").forEach((c) => {
+		if (c.dataset.project !== "all") c.remove();
+	});
+	list.forEach((name) => {
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "chip";
+		btn.dataset.project = name;
+		btn.textContent = name;
+		row.appendChild(btn);
+	});
 }
 
 function setStat(id, value) {
@@ -77,7 +111,7 @@ function appendLogRow(log) {
 		formatTime(log.dt),
 	)}</td>
 		<td class="col-project">
-			<span class="pill">${escapeHTML(projectFromPlatform(log.platform))}</span>
+			<span class="pill">${escapeHTML(projectForLog(log))}</span>
 		</td>
 		<td class="col-level">
 			${
@@ -164,15 +198,19 @@ document.addEventListener("keydown", (e) => {
 	}
 });
 
-// Ask the server whether this session is in demo mode and surface a banner.
+// Ask the server whether this session is in demo mode, what projects to
+// show, and surface the banner / chips accordingly.
 fetch("/api/me")
 	.then((r) => r.json())
 	.then((me) => {
-		if (me.demo) {
+		demoMode = !!me.demo;
+		projects = Array.isArray(me.projects) ? me.projects : [];
+		if (demoMode) {
 			document.body.classList.add("is-demo");
 			const banner = document.getElementById("demo-banner");
 			if (banner) banner.hidden = false;
 		}
+		renderProjectChips(projects);
 	})
 	.catch(() => {});
 

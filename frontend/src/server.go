@@ -60,6 +60,14 @@ func enterDemo(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/index.html")
 }
 
+// Project lists shown in the dashboard. Real users see Matias's portfolio
+// projects; demo viewers see anonymized stand-ins so the homelab narrative
+// isn't given away before an interview.
+var (
+	realProjects = []string{"foothold", "totem", "portfolio", "atlas"}
+	demoProjects = []string{"gateway", "orders", "notifications", "analytics"}
+)
+
 // apiMe returns the current session state so the client can render demo /
 // auth UI without exposing the HttpOnly session cookie to JS.
 func apiMe(c echo.Context) error {
@@ -68,13 +76,16 @@ func apiMe(c echo.Context) error {
 		"authenticated": false,
 		"demo":          false,
 		"email":         nil,
+		"projects":      []string{},
 	}
 	if v, ok := sess.Values["email"].(string); ok && v != "" {
 		out["authenticated"] = true
 		out["email"] = v
+		out["projects"] = realProjects
 	}
 	if v, ok := sess.Values["demo"].(bool); ok && v {
 		out["demo"] = true
+		out["projects"] = demoProjects
 	}
 	return c.JSON(http.StatusOK, out)
 }
