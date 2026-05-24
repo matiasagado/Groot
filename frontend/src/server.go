@@ -106,44 +106,38 @@ func checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-// login handles user login by checking credentials and validating the password
+// login handles user login by checking credentials.
+// Error responses route into #password-error-login via htmx HX-Retarget so the form keeps
+// user input and the error renders inline. Returning 200 is intentional — htmx 1.9 skips
+// swaps on 4xx. Password-rule validation only runs at registration, not here.
 func login(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	if email == "" || password == "" {
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message": "Email and password are required",
-		})
+	renderError := func(items ...string) error {
+		c.Response().Header().Set("HX-Retarget", "#password-error-login")
+		c.Response().Header().Set("HX-Reswap", "innerHTML")
+		var b strings.Builder
+		b.WriteString(`<ul class="error-list">`)
+		for _, item := range items {
+			b.WriteString("<li>")
+			b.WriteString(html.EscapeString(strings.TrimSpace(item)))
+			b.WriteString("</li>")
+		}
+		b.WriteString("</ul>")
+		return c.HTML(http.StatusOK, b.String())
 	}
 
-	errors := validatePassword(password)
-	if len(errors) > 0 {
-		errorMessage := "Password must have:\n"
-		errorMessage += "8 characters\n"
-		errorMessage += "One uppercase letter\n"
-		errorMessage += "One lowercase letter\n"
-		errorMessage += "One number\n"
-		errorMessage += "One special character"
-
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"message":      "Password validation failed",
-			"errorMessage": errorMessage,
-		})
+	if email == "" || password == "" {
+		return renderError("Email and password are required")
 	}
 
 	user, err := findUserByEmail(email)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-			"message": "Invalid credentials",
-		})
+		return renderError("Invalid credentials")
 	}
-
 	if !checkPasswordHash(password, user.Password) {
-		fmt.Printf("Password Invalid: %v", user.Password)
-		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
-			"message": "Invalid credentials",
-		})
+		return renderError("Invalid credentials")
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/index.html")
